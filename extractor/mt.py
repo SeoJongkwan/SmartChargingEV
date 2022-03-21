@@ -2,7 +2,7 @@ import pandas as pd
 import json
 import psycopg2
 from tqdm import tqdm
-
+from dateutil.relativedelta import relativedelta
 from common import info
 from exception import MessageTypeException
 
@@ -56,8 +56,13 @@ def select(mt):
         raise MessageTypeException
     print(f"message_type: {info.mt_dict[mt]}")
 
-    cond = f"message_type = '{mt.lower()}'"         #value format is lower character in DB
-    raw_msg = f"SELECT * FROM {db_table} WHERE {cond}"
+    if mt == 'all':
+        raw_msg = f"SELECT * FROM {db_table}"
+
+    else:
+        cond = f"message_type = '{mt.lower()}'"  # value format is lower character in DB
+        raw_msg = f"SELECT * FROM {db_table} WHERE {cond}"
+
     cursor.execute(raw_msg)
     raw = pd.DataFrame(cursor.fetchall())
     raw.columns = [desc[0] for desc in cursor.description]
@@ -66,4 +71,18 @@ def select(mt):
 
     if mt == '15':
         df1 = convert_status_code(df1)
+    return df1
+
+def select_usage(table):
+    raw_msg = f"SELECT * FROM {table} ORDER BY start_time ASC"
+    cursor.execute(raw_msg)
+    df1 = pd.DataFrame(cursor.fetchall())
+    df1.columns = [desc[0] for desc in cursor.description]
+    return df1
+
+
+def select_time(df, col, start, month):
+    end = start + relativedelta(months=month)
+    df1 = df[(df[col] > str(start)) & (df[col] < str(end))].reset_index(drop=True)
+    print("duration: {} ~ {}".format(start, end))
     return df1

@@ -25,6 +25,7 @@ mt_dict = {
     '26': ['IC Card Payment Response', '충전기->서버', 'v0.5'],
     '27': ['RF Card Auth Cancel Report', '충전기->서버', 'v0.5'],
     '28': ['RF/IC Card Auth Cancel Response', '충전기<-서버', 'v0.5'],
-    '29': ['IC Card Auth Cancel Report', '충전기->서버', 'v0.6']
+    '29': ['IC Card Auth Cancel Report', '충전기->서버', 'v0.6'],
+    'all': ['All Message Type']
 }
 
