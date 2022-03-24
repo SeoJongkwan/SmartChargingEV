@@ -6,6 +6,8 @@ password = "iloveyou"
 port = "5432"
 table = ["charger_rawmessage", "charger_chargerusage"]
 
+station_name = ["인덕원 IT밸리", "해오름 휴게소", "광주보건환경연구원", "국민차매매단지 공항점"]
+
 # -- Message Type information ---------------------------------------------------
 mt_dict = {
     '05': ['Access Request', '충전기<-서버'],
