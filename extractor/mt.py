@@ -17,11 +17,9 @@ print(f'table: {db_table} \n')
 
 def parse_data(df):
     """
-    :param
-    df: original data pulled from DB
+    :param df: original data pulled from DB
     :return: dataframe with parsed json_data column
     """
-
     elem = []
     df1 = dict(df['json_data'])
     for i in tqdm(range(0,len(df1)), desc="json parsing"):
@@ -32,12 +30,10 @@ def parse_data(df):
 
 def convert_status_code(df):
     """
-    :param
-    df: message type is Device Status
+    :param df: message type is Device Status
     status code value is converted int to hex
     :return: dataframe with hex column
     """
-
     hex_ds = []
     for i in df["Device Status"]:
         hex_ds.append('{0:02X}'.format(i))
@@ -47,11 +43,9 @@ def convert_status_code(df):
 
 def select(mt):
     """
-    :param
-    mt: message type predefined protocol specification ref. info.py -> mt_type
+    :param mt: message type predefined protocol specification ref. info.py -> mt_type
     :return: dataframe corresponding mt
     """
-
     if info.mt_dict.get(mt) is None:
         raise MessageTypeException
     print(f"message_type: {info.mt_dict[mt]}")
