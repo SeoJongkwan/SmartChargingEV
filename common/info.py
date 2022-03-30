@@ -1,8 +1,7 @@
 # -- DataBase information -----------------------------------------------------
-# host = "ev.i-on.net"
-host = "youlsa.i-on.net"
+host = "ev.i-on.net"
 dbname = "evehicle"
-user = "root" # evehicle
+user = "evehicle"
 password = "iloveyou"
 port = "5432"
 table = ["charger_rawmessage", "charger_chargerusage"]
