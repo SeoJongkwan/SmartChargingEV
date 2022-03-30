@@ -68,7 +68,7 @@ def select(mt):
     return df1
 
 def select_usage(table):
-    raw_msg = f"SELECT * FROM {table} ORDER BY start_time ASC"
+    raw_msg = f"SELECT * FROM {table} WHERE end_time > start_time ORDER BY start_time ASC"
     cursor.execute(raw_msg)
     df1 = pd.DataFrame(cursor.fetchall())
     df1.columns = [desc[0] for desc in cursor.description]
