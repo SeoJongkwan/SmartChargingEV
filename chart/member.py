@@ -47,6 +47,8 @@ class Plot:
         df = self.cs.groupby([col]).size().reset_index(name='cnt')
         fig = px.pie(df, values='cnt', names=col, title=f"Percentage by {col}")
         fig.update_traces(textposition='inside', textinfo='percent+label', textfont_size=30)
+        # update_layout method used to modify change and size
+        fig.update_layout(legend=dict(title_font_family="Times New Roman", font=dict(size=20)))
         fig.show()
 
     def show_info_ratio_group(self, col):
@@ -103,5 +105,5 @@ class Plot:
         min = df['charging_time'].min()
         mean = df['charging_time'].mean()
 
-        data = pd.DataFrame({"max_charging_time": max, "min_charging_time": min, "mean_charging_time": mean}, index=['charging_time'])
+        data = pd.DataFrame({"max": max, "min": min, "mean": mean}, index=['charging_time'])
         return data
