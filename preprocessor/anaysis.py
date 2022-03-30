@@ -64,24 +64,3 @@ member_info.show_charging_cnt_scatter('hour')
 member_info.show_info_ratio('paying_method')
 # 멤버별 비중차트
 # member_info.show_info_ratio_group('paying_method')
-
-
-# # 멤버별 선호시간대 scatter
-# # chart.scatter_chart(df_duration, 'is_member', 'hour')
-#
-# # 멤버별 선호시간대 누적 bar
-# # chart.cumulative_bar_chart(df_duration, 'is_member', 'day_of_week')
-#
-# # 멤버별 충전횟수
-# # chart.bar_cnt(df_duration, 'is_member', 'day_of_week')
-# # chart.bar_cnt(df_duration, 'is_member', 'hour')
-# # 충전소별 충전량 or 충전요금
-# # chart.bar_sum(df_duration, 'is_member', 'day_of_week', 'charging_capacity')
-#
-# # 멤버별 지불방법 비율
-# # chart.double_pie_chart(df)
-#
-# # 멤버별 충전횟수
-# # chart.bar_cnt(df, 'is_member', 'day_of_week')
-# # 멤버별 충전량 or 충전요금
-# chart.bar_sum(df, 'is_member', 'day_of_week', 'charging_capacity')
