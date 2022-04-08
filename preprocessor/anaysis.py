@@ -34,8 +34,8 @@ import plotly.express as px
 # df = cs_date.copy()
 df = cs_date.groupby(['hour', 'month']).size().reset_index(name='count')
 df2 = cs_date.groupby(['hour', 'month'])['charging_capacity'].sum().reset_index(name='charge_amount')
-df3 = cs_date.groupby(['hour', 'month'])['charging_time'].mean().reset_index(name='charging_time')
-df['utilization_rate'] = df3['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100)
+df3 = cs_date.groupby(['hour', 'month'])['charging_time'].sum().reset_index(name='charging_time')
+df['utilization_rate'] = df3['charging_time'].apply(lambda x: x / (24 * 60 * 60 * 24) * 100)
 
 df_merge = pd.concat([df, df2['charge_amount'], df3['charging_time']], axis=1, join='inner')
 # df2 = df[['hour', 'count', 'charge_amount', 'charging_time', 'utilization_rate']]
