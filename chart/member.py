@@ -78,7 +78,7 @@ class Plot:
         for i, l in enumerate(df_lst):
             # basic math to get col and row
             row = i // cols + 1
-            col = i % (rows + 2) + 1
+            col = i % (rows + 2) + 2
             # this is the dataframe for every continent
             d = l[1]
             fig.add_trace(
