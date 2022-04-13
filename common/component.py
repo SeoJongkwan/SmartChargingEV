@@ -2,7 +2,6 @@ class base:
     def __init__(self, df):
         self.df = df
 
-
     def time_split(self, column):
         """
         :param column: start time
