@@ -18,7 +18,7 @@ print(f'table: {db_table} \n')
 def parse_data(df):
     """
     :param df: original data pulled from DB
-    :return: dataframe with parsed json_data column
+    :return: parsed json_data format
     """
     elem = []
     df1 = dict(df['json_data'])
@@ -68,6 +68,10 @@ def select(mt):
     return df1
 
 def select_usage(table):
+    """
+    :param table: DB table name
+    :return: result for select table
+    """
     raw_msg = f"SELECT * FROM {table} WHERE end_time > start_time ORDER BY start_time ASC"
     cursor.execute(raw_msg)
     df1 = pd.DataFrame(cursor.fetchall())
@@ -76,6 +80,13 @@ def select_usage(table):
 
 
 def select_time(df, col, start, month):
+    """
+    :param df: target
+    :param col: start date column
+    :param start: specific start date
+    :param month: relativedelta end date
+    :return: apply date
+    """
     end = start + relativedelta(months=month)
     df1 = df[(df[col] > str(start)) & (df[col] < str(end))].reset_index(drop=True)
     print("duration: {} ~ {}".format(start, end))

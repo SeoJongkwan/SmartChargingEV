@@ -5,6 +5,11 @@ from plotly.subplots import make_subplots
 from matplotlib import pyplot as plt
 
 def value_count(df, col):
+    """
+    :param df: target
+    :param col: specific column
+    :return: bar chart
+    """
     df.value_counts(col).sort_values().plot(kind='barh')
     plt.title(col)
     plt.grid(True, axis='x')

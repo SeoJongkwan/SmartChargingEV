@@ -5,9 +5,9 @@ from common import info
 from chart import member
 from extractor import mt
 import plotly.graph_objects as go
+import plotly.express as px
 
 usage_history = mt.select_usage('charger_chargerusage')
-
 # 충전소 선택
 charger_station = info.station_name[0]
 print(f"charger station: {charger_station}")
@@ -23,24 +23,27 @@ cs_date = mt.select_time(cs, 'start_time', start_date, 4)
 
 # 시간정보 추가
 cs_date['month'] = cs_date['start_time'].dt.strftime('%Y-%m')
-cs_date['hour'] = pd.DatetimeIndex(cs_date['start_time']).hour
-cs_date['date'] = pd.DatetimeIndex(cs_date['start_time']).date
-cs_date['day_of_week'] = cs_date['start_time'].dt.day_name()
+# cs_date['hour'] = pd.DatetimeIndex(cs_date['start_time']).hour
+# cs_date['date'] = pd.DatetimeIndex(cs_date['start_time']).date
+cs_date['hour'] = cs_date['start_time'].dt.hour
+cs_date['date'] = cs_date['start_time'].dt.date
 cs_date['weekday'] = cs_date['start_time'].dt.weekday
+cs_date['day_of_week'] = cs_date['start_time'].dt.day_name()
 cs_date['charging_time'] =(cs_date['end_time'] - cs_date['start_time']).dt.total_seconds()
 
-import plotly.express as px
 # df = cs_date.copy()
-# period =  hour, weekday, month
-period = 'hour'
-df = cs_date.groupby([period, 'month']).size().reset_index(name='charging_count')
-df2 = cs_date.groupby([period, 'month'])['charging_capacity'].sum().reset_index(name='charging_amount')
-df3 = cs_date.groupby([period, 'month'])['charging_time'].sum().reset_index(name='charging_time')
-df['utilization_rate'] = df3['charging_time'].apply(lambda x: x / (24 * 60 * 60 * 24) * 100)
+period = ["hour", "weekday", "day_of_week", "month"]
+sel_period = period[0]
+
+df = cs_date.groupby([sel_period, 'month']).size().reset_index(name='charging_count')
+df2 = cs_date.groupby([sel_period, 'month'])['charging_capacity'].sum().reset_index(name='charging_amount')
+df3 = cs_date.groupby([sel_period, 'month'])['charging_time'].sum().reset_index(name='charging_time')
+df['utilization_rate'] = round(df3['charging_time'].apply(lambda x: x / (24 * 60 * 60 * 24) * 100), 1)
+
 df_merge = pd.concat([df, df2['charging_amount'], df3['charging_time']], axis=1, join='inner')
 
 # 월별 이용률 비교
-fig = px.bar(df, x=period, y='utilization_rate', color='month', barmode='group', title=f"Utilization Rate per hours",
+fig = px.bar(df, x=sel_period, y='utilization_rate', color='month', barmode='group', title=f"Utilization Rate per hours",
              color_discrete_sequence=[
                  px.colors.qualitative.Alphabet[15],
                  px.colors.qualitative.Plotly[2],
@@ -49,6 +52,8 @@ fig = px.bar(df, x=period, y='utilization_rate', color='month', barmode='group',
                  ]
              )
 fig.update_layout(xaxis= {"dtick":1})
+fig.write_html("../log/chart/test.html")
+fig.write_image("../log/chart/test.png")
 fig.show()
 
 # charging_count, charging_amount
@@ -57,11 +62,11 @@ col = 'charging_amount'
 color = 'gold'
 fig = go.Figure(
     data=[
-        go.Bar(name='Charging Time', x=df_merge[period], y=df_merge["charging_time"], yaxis='y', offsetgroup=2, marker={'color': 'cornflowerblue'}),
-        go.Bar(name=f"{col}", x=df_merge[period], y=df_merge[col], yaxis='y2', offsetgroup=1, marker={'color': color})
+        go.Bar(name='Charging Time', x=df_merge[sel_period], y=df_merge["charging_time"], yaxis='y', offsetgroup=2, marker={'color': 'cornflowerblue'}),
+        go.Bar(name=f"{col}", x=df_merge[sel_period], y=df_merge[col], yaxis='y2', offsetgroup=1, marker={'color': color})
     ],
     layout={
-        'xaxis': {'title' : f"{period}"},
+        'xaxis': {'title' : f"{sel_period}"},
         'yaxis': {'title': 'Charging Time (sec)'},
         'yaxis2': {'title': f"{col}", 'overlaying': 'y', 'side': 'right', 'showgrid' : False}
     }
@@ -72,7 +77,7 @@ fig.show()
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))
-
+#
 # # 회원유형 선택
 # member_type = info.member_type[0] # 0: 회원, 1: 로밍회원, 2:비회원
 # print(f"member type: {member_type}")
@@ -107,12 +112,12 @@ fig.show()
 #
 # # 멤버별 충전횟수
 # member_info.show_charging_cnt('month', 'stack')
-# 멤버별 충전량 합계
+# # 멤버별 충전량 합계
 # member_info.show_charging_sum('hour', 'charging_capacity', 'stack')
-# 멤버별 충전횟수 scatter
+# # 멤버별 충전횟수 scatter
 # member_info.show_charging_cnt_scatter('hour')
-# 비중 차트
+# # 비중 차트
 # member_info.show_info_ratio('paying_method')
-# 멤버별 비중차트
+# # 멤버별 비중차트
 # member_info.show_info_ratio_group('paying_method')
 
