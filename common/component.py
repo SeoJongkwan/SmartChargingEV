@@ -28,8 +28,7 @@ class base:
         dc_charger = pd.concat([df, station_hour]).sort_values('start_time').reset_index(drop=True)
 
         dc_charger['st_sec'] = 3600 - (dc_charger['minute'] * 60)  # 충전 시작시간에서 가능한 충전시간
-        dc_charger['ct_sec'] = (dc_charger['end_time'] - dc_charger[
-            'start_time']).dt.total_seconds()  # 충전시간
+        dc_charger['ct_sec'] = (dc_charger['end_time'] - dc_charger['start_time']).dt.total_seconds()  # 충전시간
         dc_charger['ct_sec'] = dc_charger['ct_sec'].astype(int)
         dc_charger['st_sec'] = dc_charger['st_sec'].astype(int)
 

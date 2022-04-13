@@ -38,10 +38,10 @@ InDeokWonIT_group = InDeokWonIT_dc_charger.groupby(['month', select_period]).siz
 
 charging_cnt = list(InDeokWonIT_dc_charger.groupby(['month', select_period]).size().to_numpy())
 charging_amount = list(InDeokWonIT_dc_charger.groupby(['month', select_period])['charging_capacity'].sum())
-ct_seconds = list(InDeokWonIT_dc_charger.groupby(['month', select_period])['charging_time'].mean())
+charging_time = list(InDeokWonIT_dc_charger.groupby(['month', select_period])['charging_time'].mean())
 InDeokWonIT_group['charging_amount'] = charging_amount
-InDeokWonIT_group['charging_time'] = ct_seconds
-occupation = InDeokWonIT_group['charging_time'].apply(lambda x: x / (24 * 60) * 100)
+InDeokWonIT_group['charging_time'] = charging_time
+occupation = InDeokWonIT_group['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100)
 InDeokWonIT_group['occupation'] = occupation
 
 InDeokWonIT_group['date'] = InDeokWonIT_group[['month', 'hour']].apply(lambda x: ' '.join(x.astype(str)), axis=1)
