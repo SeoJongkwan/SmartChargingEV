@@ -6,7 +6,13 @@ password = "iloveyou"
 port = "5432"
 table = ["charger_rawmessage", "charger_chargerusage"]
 
-station_name = ["인덕원 IT밸리", "해오름 휴게소", "광주보건환경연구원", "국민차매매단지 공항점"]
+#station name, station code, charger code, charger num
+station_info = [
+    ('광주보건환경연구원','1802','1','305'),
+    ('인덕원 IT밸리','1371','5','378'),
+    ('해오름 휴게소','1848','1','405'),
+    ('국민차매매단지 공항점','1846',['1','2'],['408','409'])
+]
 
 member_type = ["회원", "로밍회원", "비회원"]
 

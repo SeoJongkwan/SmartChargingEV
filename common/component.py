@@ -6,8 +6,8 @@ class base:
 
     def time_split(self, column):
         """
-        :param column: start time
-        :return: create time split column
+        :param column: a column name indicating start time
+        :return: a dataframe with (month, date, weekday, hour, minute) column
         """
         self.df['month'] = self.df[column].dt.strftime('%Y-%m')
         self.df['date'] = self.df[column].dt.date
@@ -18,6 +18,10 @@ class base:
         return self.df
 
     def chtime_by_hour(self, df):
+        """
+        :param df: a dataframe to calculate charging time
+        :return: the dataframe with added charging time by hour
+        """
         ct_hour = []
         for i in range(len(df)):
             if df['start_time'].dt.hour[i] != df['end_time'].dt.hour[i]:
@@ -31,10 +35,9 @@ class base:
         dc_charger['ct_sec'] = (dc_charger['end_time'] - dc_charger['start_time']).dt.total_seconds()  # 충전시간
         dc_charger['ct_sec'] = dc_charger['ct_sec'].astype(int)
         dc_charger['st_sec'] = dc_charger['st_sec'].astype(int)
-
-        dc_charger['ct_subtract'] = 0  # 충전시간에서 충전 가능시간을 제외한 시간
-        dc_charger['ct_next'] = 0  # 충전시간에서 충전 시작시간의 가능 시간을 제외한 시간
-        dc_charger['charging_time'] = 0  # 충전시간
+        dc_charger['ct_subtract'] = 0                           # 충전시간에서 충전 가능시간을 제외한 시간
+        dc_charger['ct_next'] = 0                               # 충전시간에서 충전 시작시간의 가능 시간을 제외한 시간
+        dc_charger['charging_time'] = 0                         # 충전시간
         dc_charger['ct_subtract'] = dc_charger['st_sec'] - dc_charger['ct_sec']
 
         for i in range(len(dc_charger)):
@@ -43,7 +46,6 @@ class base:
                 dc_charger['ct_next'][i + 1] = dc_charger['ct_subtract'][i]
             else:
                 dc_charger['charging_time'][i] = dc_charger['ct_sec'][i]
-
         for i in range(len(dc_charger)):
             if ((dc_charger['ct_subtract'][i] < 0) & (dc_charger['ct_next'][i] < 0)):
                 dc_charger['charging_time'][i] = abs(dc_charger['ct_next'][i])
