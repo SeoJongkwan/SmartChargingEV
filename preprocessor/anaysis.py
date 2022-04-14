@@ -2,16 +2,24 @@ from datetime import date
 import pandas as pd
 import numpy as np
 from common import info
+from common import component
 from chart import member
+from chart import history
 from extractor import mt
 import plotly.graph_objects as go
 import plotly.express as px
 
 usage_history = mt.select_usage('charger_chargerusage')
+usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
+
 # 충전소 선택
-charger_station = info.station_name[0]
+charger_station = info.station_info[1]
 print(f"charger station: {charger_station}")
-cs = usage_history[usage_history['station_name'] == charger_station]
+
+InDeokWonIT_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
+IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_number", "nonmember_number", "member_name", "charging_time", "charging_capacity",
+           "paid_fee","charging_fee","roaming_card_entity","charging_status"]
+InDeokWonIT_original_col = InDeokWonIT_original[IT_col].reset_index(drop=True)
 
 # timezone 선택
 # cs['start_time'] = pd.to_datetime(cs['start_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
@@ -19,61 +27,26 @@ cs = usage_history[usage_history['station_name'] == charger_station]
 
 # 기간 설정
 start_date = date(2021, 10, 1)
-cs_date = mt.select_time(cs, 'start_time', start_date, 4)
+cs_date = mt.select_time(InDeokWonIT_original_col, 'start_time', start_date, 1)
 
 # 시간정보 추가
 cs_date['month'] = cs_date['start_time'].dt.strftime('%Y-%m')
-# cs_date['hour'] = pd.DatetimeIndex(cs_date['start_time']).hour
-# cs_date['date'] = pd.DatetimeIndex(cs_date['start_time']).date
 cs_date['hour'] = cs_date['start_time'].dt.hour
 cs_date['date'] = cs_date['start_time'].dt.date
 cs_date['weekday'] = cs_date['start_time'].dt.weekday
-cs_date['day_of_week'] = cs_date['start_time'].dt.day_name()
-cs_date['charging_time'] =(cs_date['end_time'] - cs_date['start_time']).dt.total_seconds()
+cs_date['charge_time'] =(cs_date['end_time'] - cs_date['start_time']).dt.total_seconds() / 60 / 60
 
-# df = cs_date.copy()
-period = ["hour", "weekday", "day_of_week", "month"]
-sel_period = period[0]
+# hour, weekday, month
+sel_period = 'weekday'
 
-df = cs_date.groupby([sel_period, 'month']).size().reset_index(name='charging_count')
-df2 = cs_date.groupby([sel_period, 'month'])['charging_capacity'].sum().reset_index(name='charging_amount')
-df3 = cs_date.groupby([sel_period, 'month'])['charging_time'].sum().reset_index(name='charging_time')
-df['utilization_rate'] = round(df3['charging_time'].apply(lambda x: x / (24 * 60 * 60 * 24) * 100), 1)
+component = component.base(cs_date)
+sel_df = component.get_occupation(sel_period)
 
-df_merge = pd.concat([df, df2['charging_amount'], df3['charging_time']], axis=1, join='inner')
+history = history.Plot(sel_df)
+history.show_occupation(sel_df, sel_period, 'group')
 
-# 월별 이용률 비교
-fig = px.bar(df, x=sel_period, y='utilization_rate', color='month', barmode='group', title=f"Utilization Rate per hours",
-             color_discrete_sequence=[
-                 px.colors.qualitative.Alphabet[15],
-                 px.colors.qualitative.Plotly[2],
-                 px.colors.qualitative.Plotly[9],
-                 px.colors.qualitative.Alphabet[11]
-                 ]
-             )
-fig.update_layout(xaxis= {"dtick":1})
-fig.write_html("../log/chart/test.html")
-fig.write_image("../log/chart/test.png")
-fig.show()
-
-# charging_count, charging_amount
-col = 'charging_amount'
-# lightsalmon(charging_count), gold(charging_amount)
-color = 'gold'
-fig = go.Figure(
-    data=[
-        go.Bar(name='Charging Time', x=df_merge[sel_period], y=df_merge["charging_time"], yaxis='y', offsetgroup=2, marker={'color': 'cornflowerblue'}),
-        go.Bar(name=f"{col}", x=df_merge[sel_period], y=df_merge[col], yaxis='y2', offsetgroup=1, marker={'color': color})
-    ],
-    layout={
-        'xaxis': {'title' : f"{sel_period}"},
-        'yaxis': {'title': 'Charging Time (sec)'},
-        'yaxis2': {'title': f"{col}", 'overlaying': 'y', 'side': 'right', 'showgrid' : False}
-    }
-)
-fig.update_layout(xaxis= {"dtick":1})
-fig.show()
-
+sel_col = 'charging_amount'
+history.show_charging_info(sel_df, sel_period, sel_col)
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))

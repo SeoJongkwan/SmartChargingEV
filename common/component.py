@@ -51,3 +51,25 @@ class base:
                 dc_charger['charging_time'][i] = abs(dc_charger['ct_next'][i])
 
         return dc_charger
+
+    def get_occupation(self, select_period):
+        """
+        :param column: select period ex) hour, weekday, month
+        :return: create occupation column
+        """
+        df = self.df.groupby(['date', select_period]).size().reset_index(name='charging_cnt')
+
+        charging_cnt = list(self.df.groupby(['date', select_period]).size().to_numpy())
+        charging_amount = list(self.df.groupby(['date', select_period])['charging_capacity'].sum())
+        ct_seconds = list(self.df.groupby(['date', select_period])['charge_time'].sum())
+
+        df['charging_cnt'] = charging_cnt
+        df['charging_amount'] = charging_amount
+        df['ct_seconds'] = ct_seconds
+        occupation = df['ct_seconds'].apply(lambda x: x / (24) * 100)
+        df['occupation'] = occupation
+
+        df_period = df.groupby(select_period).mean()
+        df_period.reset_index(level=[select_period], inplace=True)
+        # df['date'] = df[['month', 'hour']].apply(lambda x: ' '.join(x.astype(str)), axis=1)
+        return df_period
