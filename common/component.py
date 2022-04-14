@@ -11,7 +11,7 @@ class base:
         """
         self.df['month'] = self.df[column].dt.strftime('%Y-%m')
         self.df['date'] = self.df[column].dt.date
-        # self.df['weekday'] = self.df[column].dt.weekday
+        self.df['weekday'] = self.df[column].dt.weekday
         self.df['day_of_week'] = self.df[column].dt.day_name()
         self.df['hour'] = self.df[column].dt.hour
         self.df['minute'] = self.df[column].dt.minute
@@ -52,18 +52,23 @@ class base:
 
         return dc_charger
 
-    def get_occupation(self, select_period):
+    def get_charging_value(self, select_period):
         """
         :param column: select period ex) hour, weekday, month
         :return: create occupation column
         """
-        df = self.df.groupby(['month', 'date', select_period]).size().reset_index(name='charging_cnt')
-        df['charging_cnt'] = list(self.df.groupby(['month', 'date', select_period]).size().to_numpy())
-        df['charging_amount'] = list(self.df.groupby(['month', 'date', select_period])['charging_capacity'].sum())
-        df['ct_hour'] = list(self.df.groupby(['month', 'date', select_period])['charge_time'].sum())
-        occupation = df['ct_hour'].apply(lambda x: x / (24) * 100)
-        df['occupation'] = occupation
+        if select_period == 'month' or select_period == 'date' :
+            group_col = [select_period]
+            col = [select_period]
+        else :
+            group_col = ['month', 'date', select_period]
+            col = ['month', select_period]
 
-        df_period = df.groupby(select_period).mean()
+        df = self.df.groupby(group_col).size().reset_index(name='charging_cnt')
+        df['charging_capacity'] = list(self.df.groupby(group_col)['charging_capacity'].sum())
+        df['ct_hour'] = list(self.df.groupby(group_col)['charge_time'].sum())
+        df['occupation'] = df['ct_hour'].apply(lambda x: x / (24) * 100)
+
+        df_period = df.groupby(col).mean()
         df_period.reset_index(level=[select_period], inplace=True)
         return df_period

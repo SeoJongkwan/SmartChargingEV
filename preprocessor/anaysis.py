@@ -13,13 +13,13 @@ usage_history = mt.select_usage('charger_chargerusage')
 usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
 
 # 충전소 선택
-charger_station = info.station_info[1]
+charger_station = info.station_info[3]
 print(f"charger station: {charger_station}")
 
-InDeokWonIT_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
+charger_original = usage_history[usage_history["charger_num"] == charger_station[3][0]].reset_index(drop=True)
 IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_number", "nonmember_number", "member_name", "charging_time", "charging_capacity",
            "paid_fee","charging_fee","roaming_card_entity","charging_status"]
-InDeokWonIT_original_col = InDeokWonIT_original[IT_col].reset_index(drop=True)
+charger_original_col = charger_original[IT_col].reset_index(drop=True)
 
 # timezone 선택
 # cs['start_time'] = pd.to_datetime(cs['start_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
@@ -27,27 +27,27 @@ InDeokWonIT_original_col = InDeokWonIT_original[IT_col].reset_index(drop=True)
 
 # 기간 설정
 start_date = date(2021, 10, 1)
-cs_date = mt.select_time(InDeokWonIT_original_col, 'start_time', start_date, 1)
+charger = mt.select_time(charger_original_col, 'start_time', start_date, 4)
 
 # 시간정보 추가
-cs_date['month'] = cs_date['start_time'].dt.strftime('%Y-%m')
-cs_date['hour'] = cs_date['start_time'].dt.hour
-cs_date['date'] = cs_date['start_time'].dt.date
-cs_date['weekday'] = cs_date['start_time'].dt.weekday
-cs_date['charge_time'] =(cs_date['end_time'] - cs_date['start_time']).dt.total_seconds() / 60 / 60
+component = component.base(charger)
+charger = component.time_split('start_time')
+charger['charge_time'] =(charger['end_time'] - charger['start_time']).dt.total_seconds() / 60 / 60
 
-# hour, weekday, month
-sel_period = 'weekday'
+period = ["hour", "date", "day_of_week", "month"]
+select_period = period[1]
 
-component = component.base(cs_date)
-sel_df = component.get_occupation(sel_period)
+# component = component.base(charger)
+charging_value = component.get_charging_value(select_period)
 
 #시간대별 충전기 이용률
-charger_chart = charger.Plot(sel_df)
-charger_chart.show_occupation(sel_df, sel_period, 'group')
+# charger_chart = charger.Plot(charging_value)
+# charger.show_occupation(charging_value, select_period, 'group')
 
-sel_col = 'charging_amount'
-charger_chart.show_charging_info(sel_df, sel_period, sel_col)
+# col = ["charging_cnt", "charging_capacity"]
+# select_col = col[1]
+# charger_chart.show_charging_info(charging_value, select_period, select_col)
+
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))
