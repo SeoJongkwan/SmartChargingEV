@@ -4,7 +4,7 @@ import numpy as np
 from common import info
 from common import component
 from chart import member
-from chart import history
+from chart import charger
 from extractor import mt
 import plotly.graph_objects as go
 import plotly.express as px
@@ -42,11 +42,12 @@ sel_period = 'weekday'
 component = component.base(cs_date)
 sel_df = component.get_occupation(sel_period)
 
-history = history.Plot(sel_df)
-history.show_occupation(sel_df, sel_period, 'group')
+#시간대별 충전기 이용률
+charger_chart = charger.Plot(sel_df)
+charger_chart.show_occupation(sel_df, sel_period, 'group')
 
 sel_col = 'charging_amount'
-history.show_charging_info(sel_df, sel_period, sel_col)
+charger_chart.show_charging_info(sel_df, sel_period, sel_col)
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))
