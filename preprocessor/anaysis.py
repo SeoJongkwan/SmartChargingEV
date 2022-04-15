@@ -4,7 +4,7 @@ import numpy as np
 from common import info
 from common import component
 from chart import member
-from chart import charger
+from chart import charger as charger_chart
 from extractor import mt
 import plotly.graph_objects as go
 import plotly.express as px
@@ -16,7 +16,7 @@ usage_history = usage_history[usage_history['end_time'] > usage_history['start_t
 charger_station = info.station_info[3]
 print(f"charger station: {charger_station}")
 
-charger_original = usage_history[usage_history["charger_num"] == charger_station[3][0]].reset_index(drop=True)
+charger_original = usage_history[usage_history["charger_num"] == charger_station[3][1]].reset_index(drop=True)
 IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_number", "nonmember_number", "member_name", "charging_time", "charging_capacity",
            "paid_fee","charging_fee","roaming_card_entity","charging_status"]
 charger_original_col = charger_original[IT_col].reset_index(drop=True)
@@ -34,15 +34,15 @@ component = component.base(charger)
 charger = component.time_split('start_time')
 charger['charge_time'] =(charger['end_time'] - charger['start_time']).dt.total_seconds() / 60 / 60
 
-period = ["hour", "date", "day_of_week", "month"]
-select_period = period[1]
+period = ["hour", "date", "day_of_week", "month", "weekday"]
+select_period = period[3]
 
 # component = component.base(charger)
 charging_value = component.get_charging_value(select_period)
 
 #시간대별 충전기 이용률
-# charger_chart = charger.Plot(charging_value)
-# charger.show_occupation(charging_value, select_period, 'group')
+charger_chart = charger_chart.Plot(charging_value)
+charger_chart.show_occupation(select_period, 'group')
 
 # col = ["charging_cnt", "charging_capacity"]
 # select_col = col[1]

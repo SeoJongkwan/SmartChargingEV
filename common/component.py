@@ -57,10 +57,15 @@ class base:
         :param column: select period ex) hour, weekday, month
         :return: create occupation column
         """
-        if select_period == 'month' or select_period == 'date' :
-            group_col = [select_period]
+        if select_period == 'month':
+            group_col = [select_period, 'date']
+            col = [select_period, 'date']
+
+        elif select_period == 'date':
+            group_col = ['month', select_period]
             col = [select_period]
-        else :
+
+        else:
             group_col = ['month', 'date', select_period]
             col = ['month', select_period]
 
@@ -69,6 +74,9 @@ class base:
         df['ct_hour'] = list(self.df.groupby(group_col)['charge_time'].sum())
         df['occupation'] = df['ct_hour'].apply(lambda x: x / (24) * 100)
 
-        df_period = df.groupby(col).mean()
-        df_period.reset_index(level=[select_period], inplace=True)
+        df_period = df.groupby(group_col).mean()
+        df_period.reset_index(level=select_period, inplace=True)
+
+        if select_period != 'month':
+            df_period.reset_index(level='month', inplace=True)
         return df_period

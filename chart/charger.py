@@ -25,13 +25,13 @@ class Plot:
         fig.update_layout(xaxis={"dtick": 1})
         fig.show()
 
-    def show_occupation(self, df, period, barmode):
+    def show_occupation(self, period, barmode):
         """
         :param period: day_of_week, hour
         :param barmode: group, stack
         :return: bar chart
         """
-        fig = px.bar(df, x=df[period], y='occupation', color=df[period], barmode=barmode, title=f"Occupation per {period}")
+        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode=barmode, title=f"Occupation per {period}")
         # fig.update_layout(xaxis= {"dtick":1})
         fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
         fig.show()
