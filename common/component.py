@@ -52,31 +52,33 @@ class base:
 
         return dc_charger
 
-    def get_charging_value(self, select_period):
+    def get_charging_value(self, df, select_period):
         """
         :param column: select period ex) hour, weekday, month
         :return: create occupation column
         """
-        if select_period == 'month':
-            group_col = [select_period, 'date']
-            col = [select_period, 'date']
-
-        elif select_period == 'date':
-            group_col = ['month', select_period]
-            col = [select_period]
+        if select_period == 'month' or select_period == 'date':
+            group_col = ['month', 'date']
 
         else:
             group_col = ['month', 'date', select_period]
-            col = ['month', select_period]
 
-        df = self.df.groupby(group_col).size().reset_index(name='charging_cnt')
-        df['charging_capacity'] = list(self.df.groupby(group_col)['charging_capacity'].sum())
-        df['ct_hour'] = list(self.df.groupby(group_col)['charge_time'].sum())
-        df['occupation'] = df['ct_hour'].apply(lambda x: x / (24) * 100)
+        df_grouped = df.groupby(group_col)
+        df = df_grouped.size().reset_index(name='charging_cnt')
+        df['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
+        df['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
+        df['occupation'] = round(df['charging_time'].apply(lambda x: x / (24 * 60) * 100),2)
 
-        df_period = df.groupby(group_col).mean()
-        df_period.reset_index(level=select_period, inplace=True)
+        if select_period != 'date':
+            if select_period == 'month':
+                group_period = [select_period]
+            else:
+                group_period = ['month', select_period]
+            charging_grouped = df.groupby(group_period)
+            charging_stat = charging_grouped.size().reset_index(name='charging_cnt')
+            charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
+            charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
+            charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
+            df = charging_stat
 
-        if select_period != 'month':
-            df_period.reset_index(level='month', inplace=True)
-        return df_period
+        return df

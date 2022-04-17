@@ -32,7 +32,7 @@ charger = mt.select_time(charger_original_col, 'start_time', start_date, 4)
 # 시간정보 추가
 component = component.base(charger)
 charger = component.time_split('start_time')
-charger['charge_time'] =(charger['end_time'] - charger['start_time']).dt.total_seconds() / 60 / 60
+charger['charge_time'] =(charger['end_time'] - charger['start_time']).dt.total_seconds()
 
 period = ["hour", "date", "day_of_week", "month", "weekday"]
 select_period = period[3]

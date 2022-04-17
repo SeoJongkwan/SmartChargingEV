@@ -13,8 +13,17 @@ class Plot:
         :param title: station info
         :return: bar chart
         """
+        if period == 'hour':
+            title_period = '시간대'
+        elif period == 'date':
+            title_period = '일'
+        elif period == 'weekday' or period =='dayofweek':
+            title_period = '요일'
+        else:
+            title_period = '월'
+
         fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode='group',
-                     title=f"{title} - 시간대별 이용률",
+                     title=f"{title} - {title_period}별 이용률",
                      color_discrete_sequence=[
                          px.colors.qualitative.Alphabet[15],
                          px.colors.qualitative.Plotly[2],
@@ -22,16 +31,19 @@ class Plot:
                          px.colors.qualitative.Alphabet[11]
                      ]
                      )
-        fig.update_layout(xaxis={"dtick": 1})
+        if period == 'month':
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
+        else:
+            fig.update_layout(xaxis={"dtick": 1})
         fig.show()
 
-    def show_occupation(self, period, barmode):
+    def show_occupation(self, period):
         """
         :param period: day_of_week, hour
         :param barmode: group, stack
         :return: bar chart
         """
-        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode=barmode, title=f"Occupation per {period}")
+        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode='group', title=f"Occupation per {period}")
         # fig.update_layout(xaxis= {"dtick":1})
         fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
         fig.show()
