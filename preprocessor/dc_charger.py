@@ -15,9 +15,9 @@ usage_history = mt.select_usage('charger_chargerusage')
 usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
 
 # 충전기선택: station name, station code, charger code, charger num
-charger_station = info.station_info[3]
+charger_station = info.station_info[1]
 print(f"charger station: {charger_station}")
-InDeokWonIT_original = usage_history[usage_history["charger_num"] == charger_station[3][1]].reset_index(drop=True)
+InDeokWonIT_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
 IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_number", "nonmember_number", "member_name", "charging_time", "charging_capacity",
            "paid_fee","charging_fee","roaming_card_entity","charging_status"]
 InDeokWonIT_original_col = InDeokWonIT_original[IT_col].reset_index(drop=True)
@@ -32,7 +32,7 @@ InDeokWonIT = component.time_split('start_time')
 InDeokWonIT_dc_charger = component.chtime_by_hour(InDeokWonIT)
 
 period = ["hour", "weekday", "date", "month"]
-select_period = period[3]
+select_period = period[0]
 
 InDeokWonIT_stat = component.get_charging_value(InDeokWonIT_dc_charger, select_period)
 

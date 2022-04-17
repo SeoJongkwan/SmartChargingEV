@@ -69,7 +69,7 @@ class base:
         df['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
         df['occupation'] = round(df['charging_time'].apply(lambda x: x / (24 * 60) * 100),2)
 
-        if select_period != 'date':
+        if select_period == 'month' or select_period == 'weekday' :
             if select_period == 'month':
                 group_period = [select_period]
             else:
