@@ -60,12 +60,6 @@ class base:
         df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
         df2['occupation'] = round(df2['charging_time'].apply(lambda x: x / (24 * 60) * 100), 2)
 
-        # charging_grouped = df2.groupby(['month', 'hour'])
-        # charging_stat = charging_grouped.size().reset_index(name='charging_cnt')
-        # charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
-        # charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
-        # charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
-        # df2 = charging_stat
         return df2
 
     def get_day_stat(self, df):
@@ -109,34 +103,3 @@ class base:
         charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
 
         return charging_stat
-
-    def get_charging_value(self, df, select_period):
-        """
-        :param column: select period ex) hour, weekday, month
-        :return: create occupation column
-        """
-        if select_period == 'month' or select_period == 'date':
-            group_col = ['month', 'date']
-
-        else:
-            group_col = ['month', 'date', select_period]
-
-        df_grouped = df.groupby(group_col)
-        df2 = df_grouped.size().reset_index(name='charging_cnt')
-        df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
-        df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
-        df2['occupation'] = round(df2['charging_time'].apply(lambda x: x / (24 * 60) * 100),2)
-
-        if select_period == 'month' or select_period == 'weekday':
-            if select_period == 'month':
-                group_period = [select_period]
-            else:
-                group_period = ['month', select_period]
-            charging_grouped = df2.groupby(group_period)
-            charging_stat = charging_grouped.size().reset_index(name='charging_cnt')
-            charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
-            charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
-            charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
-            df2 = charging_stat
-
-        return df2
