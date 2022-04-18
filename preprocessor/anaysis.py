@@ -32,17 +32,20 @@ charger = mt.select_time(charger_original_col, 'start_time', start_date, 4)
 # 시간정보 추가
 component = component.base(charger)
 charger = component.time_split('start_time')
-charger['charge_time'] =(charger['end_time'] - charger['start_time']).dt.total_seconds()
+charger['charging_time'] =round((charger['end_time'] - charger['start_time']).dt.total_seconds(), 2)
 
-period = ["hour", "date", "day_of_week", "month", "weekday"]
-select_period = period[3]
+period = ["hour", "date", "weekday", "month"]
+select_period = period[0]
 
 # component = component.base(charger)
-charging_value = component.get_charging_value(select_period)
+charging_stat = component.get_hour_stat(charger)
+# charging_stat = component.get_day_stat(charger)
+# charging_stat = component.get_week_stat(charger)
+# charging_stat = component.get_month_stat(charger)
 
 #시간대별 충전기 이용률
-charger_chart = charger_chart.Plot(charging_value)
-charger_chart.show_occupation(select_period, 'group')
+charger_chart = charger_chart.Plot(charging_stat)
+charger_chart.show_charger_occupation(select_period, charger_station[0])
 
 # col = ["charging_cnt", "charging_capacity"]
 # select_col = col[1]

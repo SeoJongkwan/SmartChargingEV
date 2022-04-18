@@ -22,7 +22,7 @@ class Plot:
         else:
             title_period = '월'
 
-        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode='group',
+        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode='group', text='occupation',
                      title=f"{title} - {title_period}별 이용률",
                      color_discrete_sequence=[
                          px.colors.qualitative.Alphabet[15],
@@ -35,6 +35,7 @@ class Plot:
             fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
         else:
             fig.update_layout(xaxis={"dtick": 1})
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
 
     def show_occupation(self, period):
