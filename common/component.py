@@ -54,13 +54,19 @@ class base:
 
     def get_hour_stat(self, df):
 
-        df_grouped = df.groupby(['month', 'hour'])
+        df_grouped = df.groupby(['month', 'date', 'hour'])
         df2 = df_grouped.size().reset_index(name='charging_cnt')
         df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
         df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
         df2['occupation'] = round(df2['charging_time'].apply(lambda x: x / (24 * 60) * 100), 2)
 
-        return df2
+        charging_grouped = df2.groupby(['month', 'hour'])
+        charging_stat = charging_grouped.size().reset_index(name='charging_cnt')
+        charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
+        charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
+        charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
+
+        return charging_stat
 
     def get_day_stat(self, df):
 

@@ -13,10 +13,10 @@ usage_history = mt.select_usage('charger_chargerusage')
 usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
 
 # 충전소 선택
-charger_station = info.station_info[3]
+charger_station = info.station_info[1]
 print(f"charger station: {charger_station}")
 
-charger_original = usage_history[usage_history["charger_num"] == charger_station[3][1]].reset_index(drop=True)
+charger_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
 IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_number", "nonmember_number", "member_name", "charging_time", "charging_capacity",
            "paid_fee","charging_fee","roaming_card_entity","charging_status"]
 charger_original_col = charger_original[IT_col].reset_index(drop=True)
@@ -26,8 +26,8 @@ charger_original_col = charger_original[IT_col].reset_index(drop=True)
 # cs['end_time'] = pd.to_datetime(cs['end_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
 
 # 기간 설정
-start_date = date(2021, 10, 1)
-charger = mt.select_time(charger_original_col, 'start_time', start_date, 4)
+start_date = date(2021, 12, 1)
+charger = mt.select_time(charger_original_col, 'start_time', start_date, 1)
 
 # 시간정보 추가
 component = component.base(charger)
@@ -37,19 +37,19 @@ charger['charging_time'] =round((charger['end_time'] - charger['start_time']).dt
 period = ["hour", "date", "weekday", "month"]
 select_period = period[0]
 
-# component = component.base(charger)
 charging_stat = component.get_hour_stat(charger)
 # charging_stat = component.get_day_stat(charger)
 # charging_stat = component.get_week_stat(charger)
 # charging_stat = component.get_month_stat(charger)
 
 #시간대별 충전기 이용률
+charging_stat['charging_time'] = round(charging_stat['charging_time'] / 60, 2)
 charger_chart = charger_chart.Plot(charging_stat)
 charger_chart.show_charger_occupation(select_period, charger_station[0])
 
-# col = ["charging_cnt", "charging_capacity"]
-# select_col = col[1]
-# charger_chart.show_charging_info(charging_value, select_period, select_col)
+col = ["charging_cnt", "charging_capacity"]
+select_col = col[1]
+# charger_chart.show_charging_info(select_period, select_col)
 
 
 # # 회원유형 구분

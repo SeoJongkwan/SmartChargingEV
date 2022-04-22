@@ -34,7 +34,7 @@ class Plot:
         if period == 'month':
             fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
         else:
-            fig.update_layout(xaxis={"dtick": 1})
+            fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,100])
         fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
 
@@ -49,19 +49,27 @@ class Plot:
         fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
         fig.show()
 
-    def show_charging_info(self, df, period, col):
-        # lightsalmon(charging_count), gold(charging_amount)
-        color = 'lightsalmon'
+    def show_charging_info(self, period, col):
+        df = self.charger
+        if col == 'charging_cnt':
+            color = 'lightsalmon'
+        else:
+            color = 'gold'
+
         fig = go.Figure(
             data=[
-                go.Bar(name='Charging Time', x=df[period], y=df[col], yaxis='y', offsetgroup=2, marker={'color': 'cornflowerblue'}),
-                go.Bar(name=f"{col}", x=df[period], y=df[col], yaxis='y2', offsetgroup=1, marker={'color': 'lightsalmon'})
+                go.Bar(name='Charging Time', x=df[period], y=df['charging_time'], yaxis='y', offsetgroup=2, marker={'color': 'mediumpurple'}, text=df['charging_time']),
+                go.Bar(name=f"{col}", x=df[period], y=df[col], yaxis='y2', offsetgroup=1, marker={'color': color}, text=df[col])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
-                'yaxis': {'title': 'Charging Time (sec)'},
+                'yaxis': {'title': 'Charging Time (hour)'},
                 'yaxis2': {'title': f"{col}", 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
-        # fig.update_layout(xaxis= {"dtick":1})
+        if period == 'month':
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
+        else:
+            fig.update_layout(xaxis={"dtick": 1})
+        fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
