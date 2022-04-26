@@ -45,6 +45,15 @@ class Plot:
         """
         df = self.charger
 
+        if period == 'hour':
+            title_period = '시간대'
+        elif period == 'date':
+            title_period = '일'
+        elif period == 'weekday' or period =='dayofweek':
+            title_period = '요일'
+        else:
+            title_period = '월'
+
         fig = go.Figure(
             data=[
                 go.Bar(name='Occupation', x=df[period], y=df['occupation'], yaxis='y', offsetgroup=2,
@@ -60,7 +69,7 @@ class Plot:
             }
         )
         if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), yaxis_range=[0,50], title=f"{title} - {period}별 이용률 & 충전횟수")
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), yaxis_range=[0,50], title=f"{title} - {title_period}별 이용률 & 충전횟수")
         else:
             fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,50], title=f"{title} - {period}별 이용률 & 충전횟수")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
