@@ -22,7 +22,7 @@ class Plot:
         else:
             title_period = '월'
 
-        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode='group', text='occupation',
+        fig = px.bar(self.charger, x=period, y='occupation', barmode='group', text='occupation',
                      title=f"{title} - {title_period}별 이용률",
                      color_discrete_sequence=[
                          px.colors.qualitative.Alphabet[15],
@@ -34,22 +34,43 @@ class Plot:
         if period == 'month':
             fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
         else:
-            fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,100])
+            fig.update_layout(xaxis={"dtick": 1})
         fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
 
-    def show_occupation(self, period):
+    def show_occupation_cnt(self, df, period, title):
         """
-        :param period: day_of_week, hour
-        :param barmode: group, stack
-        :return: bar chart
+        :param period: weekday, hour, month
+        :return: occupation, charging count => bar & line chart
         """
-        fig = px.bar(self.charger, x=period, y='occupation', color='month', barmode='group', title=f"Occupation per {period}")
-        # fig.update_layout(xaxis= {"dtick":1})
-        fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
+        df = self.charger
+
+        fig = go.Figure(
+            data=[
+                go.Bar(name='Occupation', x=df[period], y=df['occupation'], yaxis='y', offsetgroup=2,
+                       marker={'color': 'skyblue'}, text=df['occupation']),
+
+                go.Scatter(name='Charging Count', x=df[period], y=df['charging_cnt_mean'], yaxis='y2', marker={'color': 'gold'},
+                       text=df['charging_cnt_mean'])
+            ],
+            layout={
+                'xaxis': {'title': f"{period}"},
+                'yaxis': {'title': 'Occupation (%)'},
+                'yaxis2': {'title': 'Charging Count', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
+            }
+        )
+        if period == 'month':
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), yaxis_range=[0,50], title=f"{title} - {period}별 이용률 & 충전횟수")
+        else:
+            fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,50], title=f"{title} - {period}별 이용률 & 충전횟수")
+        fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 
     def show_charging_info(self, period, col):
+        """
+        :param period: weekday, hour, month
+        :return: charging time & charging count, charging time & charging capacity => bar chart
+        """
         df = self.charger
         if col == 'charging_cnt':
             color = 'lightsalmon'

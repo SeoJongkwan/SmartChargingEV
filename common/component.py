@@ -49,53 +49,62 @@ class base:
         for i in range(len(dc_charger)):
             if ((dc_charger['ct_subtract'][i] < 0) & (dc_charger['ct_next'][i] < 0)):
                 dc_charger['charging_time'][i] = abs(dc_charger['ct_next'][i])
-
         return dc_charger
 
     def get_hour_stat(self, df):
-
-        df_grouped = df.groupby(['month', 'date', 'hour'])
+        """
+        :param df: a base dataframe
+        :return: the dataframe with charging info by hour
+        """
+        df_grouped = df.groupby(['month','date', 'hour'])
         df2 = df_grouped.size().reset_index(name='charging_cnt')
         df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
         df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
         df2['occupation'] = round(df2['charging_time'].apply(lambda x: x / (24 * 60) * 100), 2)
 
-        charging_grouped = df2.groupby(['month', 'hour'])
+        charging_grouped = df2.groupby(['hour'])
         charging_stat = charging_grouped.size().reset_index(name='charging_cnt')
         charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
         charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
         charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
-
         return charging_stat
 
     def get_day_stat(self, df):
-
+        """
+        :param df: a base dataframe
+        :return: the dataframe with charging info by day
+        """
         df_grouped = df.groupby(['month', 'date'])
         df2 = df_grouped.size().reset_index(name='charging_cnt')
         df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
         df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
         df2['occupation'] = round(df2['charging_time'].apply(lambda x: x / (24 * 60) * 100), 2)
-
         return df2
 
     def get_week_stat(self, df):
-
+        """
+        :param df: a base dataframe
+        :return: the dataframe with charging info by week
+        """
         df_grouped = df.groupby(['month', 'date', 'weekday'])
         df2 = df_grouped.size().reset_index(name='charging_cnt')
         df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
         df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
         df2['occupation'] = round(df2['charging_time'] .apply(lambda x: x / (24 * 60) * 100), 2)
 
-        charging_grouped = df2.groupby(['month', 'weekday'])
+        charging_grouped = df2.groupby(['weekday'])
         charging_stat = charging_grouped.size().reset_index(name='charging_cnt')
+        charging_stat['charging_cnt_mean'] = list(round(charging_grouped['charging_cnt'].mean(),1))
         charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
         charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
         charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
-
         return charging_stat
 
     def get_month_stat(self, df):
-
+        """
+        :param df: a base dataframe
+        :return: the dataframe with charging info by month
+        """
         df_grouped = df.groupby(['month', 'date'])
         df2 = df_grouped.size().reset_index(name='charging_cnt')
         df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
@@ -107,5 +116,12 @@ class base:
         charging_stat['charging_capacity'] = list(charging_grouped['charging_capacity'].mean())
         charging_stat['charging_time'] = list(charging_grouped['charging_time'].mean())
         charging_stat['occupation'] = list(charging_grouped['occupation'].mean())
+        return charging_stat
 
+    def get_charging_info_per(self):
+        """
+        :return: charging info per once
+        """
+        df = self.get_day_stat(self.df)
+        charging_stat = df[['charging_cnt', 'charging_time', 'charging_capacity', 'occupation']].mean()
         return charging_stat
