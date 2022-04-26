@@ -122,6 +122,7 @@ class base:
         """
         :return: charging info per once
         """
-        df = self.get_day_stat(self.df)
-        charging_stat = round(df[['charging_cnt', 'charging_time', 'charging_capacity', 'occupation']].mean(), 2)
+        df = self.df
+        charging_stat = round(df[['charging_capacity']].mean(), 2)
+        charging_stat['charging_time'] = round(df['charging_time'].mean() / 60, 2)
         return charging_stat
