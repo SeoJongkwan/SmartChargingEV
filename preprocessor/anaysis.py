@@ -49,17 +49,19 @@ else:
 #기간별 충전기 이용률
 charging_stat['charging_time'] = round(charging_stat['charging_time'] / 60, 2)
 charger_chart = charger_chart.Plot(charging_stat)
-charger_chart.show_charger_occupation(select_period, charger_station[0])
+# charger_chart.show_charger_occupation(select_period, charger_station[0])
 
 # 이용률과 충전횟수
-charger_chart.show_occupation_cnt(charging_stat, select_period, charger_station[0])
+# charger_chart.show_occupation_cnt(charging_stat, select_period, charger_station[0])
 
 # 1회 충전시간, 충전량
 charging_info_per = component.get_charging_info_per()
 col = ["charging_cnt", "charging_capacity"]
 select_col = col[1]
-charger_chart.show_charging_info(select_period, select_col)
+# charger_chart.show_charging_info(select_period, select_col)
 
+stat = component.get_week_hour_stat(charger)
+charger_chart.show_occupation_cnt(stat[stat['weekday']==0], 'hour', charger_station[0])
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))

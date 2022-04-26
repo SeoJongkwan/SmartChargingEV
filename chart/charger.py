@@ -43,8 +43,6 @@ class Plot:
         :param period: weekday, hour, month
         :return: occupation, charging count => bar & line chart
         """
-        df = self.charger
-
         if period == 'hour':
             title_period = '시간대'
         elif period == 'date':
@@ -69,9 +67,9 @@ class Plot:
             }
         )
         if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), yaxis_range=[0,50], title=f"{title} - {title_period}별 이용률 & 충전횟수")
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 이용률 & 충전횟수") #yaxis_range=[0,50]
         else:
-            fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,50], title=f"{title} - {period}별 이용률 & 충전횟수")
+            fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,10], title=f"{title} - {title_period}별 이용률 & 충전횟수")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 
