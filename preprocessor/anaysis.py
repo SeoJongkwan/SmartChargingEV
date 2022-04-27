@@ -13,43 +13,67 @@ usage_history = mt.select_usage('charger_chargerusage')
 usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
 
 # 충전소 선택
-charger_station = info.station_info[3]
+charger_station = info.station_info[1]
 print(f"charger station: {charger_station}")
 
-charger_original = usage_history[usage_history["charger_num"] == charger_station[3][1]].reset_index(drop=True)
+charger_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
 IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_number", "nonmember_number", "member_name", "charging_time", "charging_capacity",
            "paid_fee","charging_fee","roaming_card_entity","charging_status"]
-charger_original_col = charger_original[IT_col].reset_index(drop=True)
+# charger_original_col = charger_original[IT_col].reset_index(drop=True)
+
+# csv 데이터
+filename = '../doc/charger50.csv'
+
+#pandas read_csv로 불러오기
+data = pd.read_csv(filename)
+data['start_time'] = pd.to_datetime(data['start_time'], format='%Y-%m-%d %H:%M:%S')
+data['end_time'] = pd.to_datetime(data['end_time'], format='%Y-%m-%d %H:%M:%S')
+data['charging_capacity'] = data['charging_capacity'].apply(lambda x: x.replace(',', '')).astype('int64')
+charger_original_col = data[IT_col].reset_index(drop=True)
 
 # timezone 선택
 # cs['start_time'] = pd.to_datetime(cs['start_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
 # cs['end_time'] = pd.to_datetime(cs['end_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
 
 # 기간 설정
-start_date = date(2021, 10, 1)
+start_date = date(2022, 1, 1)
 charger = mt.select_time(charger_original_col, 'start_time', start_date, 4)
 
 # 시간정보 추가
 component = component.base(charger)
 charger = component.time_split('start_time')
 charger['charging_time'] =round((charger['end_time'] - charger['start_time']).dt.total_seconds(), 2)
+charger['is_weekend'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
+
+# 충전소 선택
+stations = charger['station_name'].value_counts().index
+select_station = stations[9]
+select_charger = charger[charger['station_name'] == select_station]
+print(f"station name: {select_station}")
 
 period = ["hour", "date", "weekday", "month"]
 select_period = period[2]
 
 if select_period == 'hour':
-    charging_stat = component.get_hour_stat(charger)
+    charging_stat = component.get_hour_stat(select_charger)
 elif select_period == 'date':
-    charging_stat = component.get_day_stat(charger)
+    charging_stat = component.get_day_stat(select_charger)
 elif select_period == 'weekday' or period == 'dayofweek':
-    charging_stat = component.get_week_stat(charger)
+    # charging_stat = component.get_week_stat(select_charger)
+    charging_stat = component.get_weekdays_stat(select_charger)
 else:
-    charging_stat = component.get_month_stat(charger)
+    charging_stat = component.get_month_stat(select_charger)
 
 #기간별 충전기 이용률
 charging_stat['charging_time'] = round(charging_stat['charging_time'] / 60, 2)
 charger_chart = charger_chart.Plot(charging_stat)
 # charger_chart.show_charger_occupation(select_period, charger_station[0])
+
+week_occupation = charging_stat[charging_stat['is_weekend']==0]['occupation'].values[0]
+weekend_occupation = charging_stat[charging_stat['is_weekend']==1]['occupation'].values[0]
+
+print(f"주중 이용률: {week_occupation}")
+print(f"주말 이용률: {weekend_occupation}")
 
 # 이용률과 충전횟수
 # charger_chart.show_occupation_cnt(charging_stat, select_period, charger_station[0])
@@ -60,8 +84,19 @@ col = ["charging_cnt", "charging_capacity"]
 select_col = col[1]
 # charger_chart.show_charging_info(select_period, select_col)
 
-stat = component.get_week_hour_stat(charger)
-charger_chart.show_occupation_cnt(stat[stat['weekday']==0], 'hour', charger_station[0])
+# 주중/주말 최빈/최번 시간대
+hour_charging_stat = component.get_week_hour_stat(select_charger)
+week_max = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=False).head(2)
+week_min = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=True).head(2)
+weekend_max = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=False).head(2)
+weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=True).head(2)
+
+print(f"주중 최번 시간대: \n {week_max[['hour', 'occupation']]}")
+print(f"주중 최빈 시간대: \n {week_min[['hour', 'occupation']]}")
+print(f"주말 최번 시간대: \n {weekend_max[['hour', 'occupation']]}")
+print(f"주말 최빈 시간대: \n {weekend_min[['hour', 'occupation']]}")
+
+# charger_chart.show_occupation_cnt(stat[stat['is_weekend']==0], 'hour', charger_station[0])
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))
