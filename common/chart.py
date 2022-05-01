@@ -23,12 +23,12 @@ def pie_chart(df, col1, col2):
     fig.show()
 
 def double_pie_chart(df):
-    df1 = df.groupby(['is_member', 'paying_method']).size().reset_index(name='count')
-    df = list(df1.groupby('is_member'))
+    df1 = df.groupby(['member', 'paying_method']).size().reset_index(name='count')
+    df = list(df1.groupby('member'))
 
     # here we want our grid to be 1 x 2
     rows = 1
-    cols = 2
+    cols = 3
     # continents are the first element in l
     subplot_titles = [l[0] for l in df]
 
@@ -46,7 +46,7 @@ def double_pie_chart(df):
     for i, l in enumerate(df):
         # basic math to get col and row
         row = i // cols + 1
-        col = i % (rows + 1) + 1
+        col = i % (rows + 2) + 1
         # this is the dataframe for every continent
         d = l[1]
         fig.add_trace(
@@ -60,7 +60,8 @@ def double_pie_chart(df):
             col=col
 
         )
-    fig.update_layout(title="Paying Method by Member Type", title_x=0.5)
+    fig.update_traces(textposition='inside', textinfo='percent+label', textfont_size=30)
+    fig.update_layout(legend=dict(title_font_family="Times New Roman", font=dict(size=20)))
     fig.show()
 
 def group_cnt(df, col, period):

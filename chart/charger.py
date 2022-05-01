@@ -19,6 +19,8 @@ class Plot:
             title_period = '일'
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
+        elif period == 'is_weekend':
+            title_period = '주중/주말'
         else:
             title_period = '월'
 
@@ -49,6 +51,8 @@ class Plot:
             title_period = '일'
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
+        elif period == 'is_weekend':
+            title_period = '주중/주말'
         else:
             title_period = '월'
 
@@ -68,8 +72,10 @@ class Plot:
         )
         if period == 'month':
             fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 이용률 & 충전횟수") #yaxis_range=[0,50]
+        elif period =='hour':
+            fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 이용률 & 충전횟수")
         else:
-            fig.update_layout(xaxis={"dtick": 1}, yaxis_range=[0,12], title=f"{title} - {title_period}별 이용률 & 충전횟수")
+            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 이용률 & 충전횟수")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 

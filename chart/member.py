@@ -39,15 +39,14 @@ class Plot:
         fig = px.scatter(df, x=period, y='cnt', color=self.member_type,  symbol=self.member_type, hover_data=['cnt'], title=f"Number of charges per {period}")
         fig.show()
 
-    def show_info_ratio(self, col):
+    def show_info_ratio(self, col, title):
         """
         :param col: column name ex.paying_method
         :return: pie chart
         """
         df = self.cs.groupby([col]).size().reset_index(name='cnt')
-        fig = px.pie(df, values='cnt', names=col, title=f"Percentage by {col}")
+        fig = px.pie(df, values='cnt', names=col, title=f"{title} - Percentage by {col}")
         fig.update_traces(textposition='inside', textinfo='percent+label', textfont_size=30)
-        # update_layout method used to modify change and size
         fig.update_layout(legend=dict(title_font_family="Times New Roman", font=dict(size=20)))
         fig.show()
 
@@ -78,7 +77,7 @@ class Plot:
         for i, l in enumerate(df_lst):
             # basic math to get col and row
             row = i // cols + 1
-            col = i % (rows + 2) + 2
+            col = i % (rows + 1) + 1
             # this is the dataframe for every continent
             d = l[1]
             fig.add_trace(
@@ -92,7 +91,8 @@ class Plot:
                 row=row,
                 col=col
             )
-        fig.update_layout(title="Paying Method by Member Type", title_x=0.5)
+        fig.update_traces(textposition='inside', textinfo='percent+label', textfont_size=30)
+        fig.update_layout(legend=dict(title_font_family="Times New Roman", font=dict(size=20)))
         fig.show()
 
     def show_charging_time(self, df):
