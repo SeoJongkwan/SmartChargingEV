@@ -78,7 +78,6 @@ def select_usage(table):
     df1.columns = [desc[0] for desc in cursor.description]
     return df1
 
-
 def select_time(df, col, start, month):
     """
     :param df: target
@@ -90,4 +89,15 @@ def select_time(df, col, start, month):
     end = start + relativedelta(months=month)
     df1 = df[(df[col] > str(start)) & (df[col] < str(end))].reset_index(drop=True)
     print("duration: {} ~ {}".format(start, end))
+    return df1
+
+def select_station(station_name):
+    """
+   :param station_name: station name
+   :return: result for select station
+   """
+    raw_msg = f"SELECT * FROM charger_station WHERE station_name='{station_name}'"
+    cursor.execute(raw_msg)
+    df1 = pd.DataFrame(cursor.fetchall())
+    df1.columns = [desc[0] for desc in cursor.description]
     return df1

@@ -47,12 +47,12 @@ charger['is_weekend'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
 
 # 충전소 선택
 stations = charger['station_name'].value_counts().index
-select_station = stations[0]
+select_station = stations[1]
 select_charger = charger[charger['station_name'] == select_station]
 print(f"station name: {select_station}")
 
 charger_type = [charger, select_charger] # 전체 충전소, 선택한 충전소
-select_data = charger_type[0]
+select_data = charger_type[1]
 
 period = ["hour", "weekday", "is_weekend", "month"]
 select_period = period[2]
@@ -92,23 +92,7 @@ week_min = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(b
 weekend_max = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=False).head(5)
 weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=True).head(5)
 
-charger_chart.show_occupation_cnt(hour_charging_stat[hour_charging_stat['is_weekend']==1], 'hour', '전체 충전소')
-
-charger_list = pd.read_csv('../doc/list.csv')
-save_data = charger_list[['충전소명', '충전소코드', '주소', '상세주소']]
-save_data['운영시간'] = '24시간'
-save_data['사용대상'] = '전체'
-save_data['1회 충전시간'] = charging_info_per['charging_time']
-save_data['1회 충전량'] = charging_info_per['charging_capacity']
-save_data['주중 이용률'] = week_occupation
-save_data['주말 이용률'] = weekend_occupation
-save_data['주중 최번시간대'] = str(week_max['hour'].values)
-save_data['주중 최빈시간대'] = str(week_min['hour'].values)
-save_data['주말 최번시간대'] = str(weekend_max['hour'].values)
-save_data['주말 최빈시간대'] = str(weekend_min['hour'].values)
-
-save_data.to_csv('../doc/charger_list.csv',index=False)
-# save_data.to_excel(excel_writer='../doc/charger_list.xlsx')
+# charger_chart.show_occupation_cnt(hour_charging_stat[hour_charging_stat['is_weekend']==1], 'hour', '전체 충전소')
 
 # # 회원유형 구분
 # cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))
