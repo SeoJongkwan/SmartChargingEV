@@ -91,12 +91,13 @@ def select_time(df, col, start, month):
     print("duration: {} ~ {}".format(start, end))
     return df1
 
-def select_station(station_name):
+def select_station(station_name, charger_code):
     """
    :param station_name: station name
    :return: result for select station
    """
-    raw_msg = f"SELECT * FROM charger_station WHERE station_name='{station_name}'"
+    charger_id = '0' + str(charger_code)
+    raw_msg = f"SELECT * FROM charger_station WHERE station_name='{station_name}' AND charger_id='{charger_id}'"
     cursor.execute(raw_msg)
     df1 = pd.DataFrame(cursor.fetchall())
     df1.columns = [desc[0] for desc in cursor.description]
