@@ -64,18 +64,19 @@ for n in station_cnt:
         new_station = load_station[['station_id', 'station_name', 'address']]
         new_station.rename(columns = {'station_id': '충전소아이디', 'station_name':'충전소명', 'address':'주소'}, inplace=True)
         new_station['충전기아이디'] = int(load_station['charger_id'][0].lstrip("0"))
-        new_station['충전소유형'] = info.charger_place[0]
-        new_station['운영시간제한'] = '24'
+        new_station['충전소유형'] = info.charger_place["공동주택"]
+        new_station['운영시간'] = 24
         new_station['사용대상'] = 'all'
         new_station['1회충전시간'] = round(charging_info_per['charging_time'], 0)
         new_station['1회충전량'] = round(charging_info_per['charging_capacity'], 0)
 
         #주중/주말 판단
         hour_charging_stat = component.get_week_hour_stat(select_charger)
-        week_max = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=False).head(5)
-        week_min = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=True).head(5)
-        weekend_max = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=False).head(5)
-        weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=True).head(5)
+        criteria = 5
+        week_max = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=False).head(criteria)
+        week_min = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=True).head(criteria)
+        weekend_max = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=False).head(criteria)
+        weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=True).head(criteria)
 
         week_type = charging_stat[['is_weekend', 'occupation']]
         if len(week_type) == 2:
@@ -88,10 +89,10 @@ for n in station_cnt:
         else:
             pass
 
-        new_station['주중_주요시간대'] = str(week_max['hour'].values)
-        new_station['주중_여유시간대'] = str(week_min['hour'].values)
-        new_station['주말_주요시간대'] = str(weekend_max['hour'].values)
-        new_station['주말_여유시간대'] = str(weekend_min['hour'].values)
+        new_station['주중주요시간대'] = str(week_max['hour'].values)
+        new_station['주중여유시간대'] = str(week_min['hour'].values)
+        new_station['주말주요시간대'] = str(weekend_max['hour'].values)
+        new_station['주말여유시간대'] = str(weekend_min['hour'].values)
 
         station_path = '../doc/charger_list.xlsx'
 
@@ -99,7 +100,7 @@ for n in station_cnt:
             current_station_list = pd.read_excel(station_path)
             append_station_list = pd.concat([current_station_list, new_station]).reset_index(drop=True)   # 기존 충전소 목록에서 신규 충전소 추가
             append_station_list.duplicated(['충전소명', '충전기아이디'], keep='first')
-            last_station = append_station_list.drop_duplicates().reset_index(drop=True)  # 기존 충전소 목록에서 신규 추가 충전소 중복제거
+            last_station = append_station_list.drop_duplicates(['충전소명', '충전기아이디']).reset_index(drop=True)  # 기존 충전소 목록에서 신규 추가 충전소 중복제거
             last_station.to_excel(excel_writer=station_path, index=False)  # 최종 충전소 목록
         else:
             new_station.to_excel(excel_writer=station_path, index=False)
