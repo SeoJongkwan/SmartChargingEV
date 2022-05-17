@@ -7,6 +7,8 @@ from extractor import mt
 import os.path
 from openpyxl import Workbook
 
+pd.set_option('mode.chained_assignment',  None)
+
 # usage_history = mt.select_usage('charger_chargerusage')
 # usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
 
@@ -49,49 +51,46 @@ print(f"charger code: {charger_code}")
 
 charging_stat = component.get_weekdays_stat(select_charger)
 
-#기간별 충전기 이용률
-charging_stat['charging_time'] = round(charging_stat['charging_time'] / 60, 2)
-
-# 1회 충전시간, 충전량
-charging_info_per = component.get_charging_info_per(select_charger)
-
-# 통계 데이터
-week_occupation = charging_stat[charging_stat['is_weekend']==0]['occupation'].values[0]
+charging_stat['charging_time'] = round(charging_stat['charging_time'] / 60, 2)                  #기간별 충전기 이용률
+charging_info_per = component.get_charging_info_per(select_charger)                             #1회 충전시간, 충전량
+week_occupation = charging_stat[charging_stat['is_weekend']==0]['occupation'].values[0]         #통계 데이터
 weekend_occupation = charging_stat[charging_stat['is_weekend']==1]['occupation'].values[0]
 
+load_station = mt.select_station(station_name, charger_code)                #DB에서 충전소 기본정보 SELECT
+new_station = load_station[['station_id', 'station_name', 'address']]
+new_station['charger_id'] = int(load_station['charger_id'][0].lstrip("0"))
+new_station['place'] = info.charger_place[0]
+new_station['operating_time'] = '24시간'
+new_station['target'] = '전체'
+new_station['1회 충전시간'] = charging_info_per['charging_time']
+new_station['1회 충전량'] = charging_info_per['charging_capacity']
+
+
+#주중/주말 판단
 hour_charging_stat = component.get_week_hour_stat(select_charger)
 week_max = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=False).head(5)
 week_min = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=True).head(5)
 weekend_max = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=False).head(5)
 weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=True).head(5)
 
-load_station = mt.select_station(station_name, charger_code)
-save_data = load_station[['station_id', 'station_name', 'address']]
-save_data['charger_id'] = load_station['charger_id'][0].lstrip("0")
-save_data['place'] = info.charger_place[0]
-save_data['operating_time'] = '24시간'
-save_data['target'] = '전체'
-save_data['1회 충전시간'] = charging_info_per['charging_time']
-save_data['1회 충전량'] = charging_info_per['charging_capacity']
-save_data['week occupation'] = week_occupation
-save_data['weekend occupation'] = weekend_occupation
-save_data['week busy time'] = str(week_max['hour'].values)
-save_data['week worst time'] = str(week_min['hour'].values)
-save_data['weekend busy time'] = str(weekend_max['hour'].values)
-save_data['weekend worst time'] = str(weekend_min['hour'].values)
+new_station['week occupation'] = week_occupation
+new_station['weekend occupation'] = weekend_occupation
+new_station['week busy time'] = str(week_max['hour'].values)
+new_station['week worst time'] = str(week_min['hour'].values)
+new_station['weekend busy time'] = str(weekend_max['hour'].values)
+new_station['weekend worst time'] = str(weekend_min['hour'].values)
 
-file = '../doc/charger_list.xlsx'
 
-if os.path.isfile(file):
-    load_data = pd.read_excel('../doc/charger_list.xlsx')
-    append_data = load_data.append(save_data, 'sort=False')
+station_path = '../doc/charger_list.xlsx'
 
-    # 중복 체크
-    append_data.duplicated(['station_name', 'charger_id'], keep='first')
-    # 중복 제거
-    insert_data = append_data.drop_duplicates()
-    insert_data.to_excel(excel_writer='../doc/charger_list.xlsx', index=False)
+if os.path.isfile(station_path):
+    current_station_list = pd.read_excel(station_path)
+    append_station_list = pd.concat([current_station_list, new_station])                #기존 충전소 목록에서 신규 충전소 추가
+    append_station_list.duplicated(['station_name', 'charger_id'], keep='first')
+    last_station = append_station_list.drop_duplicates()                                #기존 충전소 목록에서 신규 추가 충전소 중복제거
+    last_station.to_excel(excel_writer=station_path, index=False)                       #최종 충전소 목록
+    print(last_station[['station_name', 'charger_id']])
 else :
-    save_data.to_excel(excel_writer='../doc/charger_list.xlsx', index=False)
-print("The charger information has been entered.")
+    new_station.to_excel(excel_writer=station_path, index=False)
+print("\nThe charger information has been entered.")
 
