@@ -61,8 +61,8 @@ for n in station_cnt:
     if load_station is None:
         pass
     else:
-        new_station = load_station[['station_id', 'station_name', 'address']]
-        new_station.rename(columns = {'station_id': '충전소아이디', 'station_name':'충전소명', 'address':'주소'}, inplace=True)
+        new_station = load_station[['station_id', 'station_name', 'station_type', 'address']]
+        new_station.rename(columns = {'station_id': '충전소아이디', 'station_name':'충전소명', 'station_type':'충전소타입', 'address':'주소'}, inplace=True)
         new_station['충전기아이디'] = int(load_station['charger_id'][0].lstrip("0"))
         new_station['충전소유형'] = info.charger_place["공동주택"]
         new_station['운영시간'] = 24
