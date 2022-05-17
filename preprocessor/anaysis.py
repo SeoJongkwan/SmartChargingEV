@@ -22,7 +22,7 @@ IT_col = ["charging_id", "station_name", "start_time", "end_time", "member_numbe
 # charger_original_col = charger_original[IT_col].reset_index(drop=True)
 
 # csv 데이터
-filename = '../doc/charger30.csv'
+filename = '../doc/charger_usage_history.csv'
 
 #pandas read_csv로 불러오기
 data = pd.read_csv(filename)
