@@ -22,7 +22,6 @@ pd.set_option('mode.chained_assignment',  None)
 regStations = mt.all_stations()
 
 
-
 #충전기 사용내역 데이터 csv load
 chargerUsageHistory = '../doc/charger_usage_history.csv'
 
