@@ -87,9 +87,9 @@ for n in station_cnt:
         member_charging_cnt = select_charger.groupby(['station_name', 'charger_code', 'member'])['member'].agg(['count']).reset_index() # 멤버별 충전횟수
         if len(member_charging_cnt[member_charging_cnt['member']=='로밍회원']) > 0  :
             new_station['roamingChargeCnt'] = member_charging_cnt[member_charging_cnt['member']=='로밍회원']['count'].iloc[0]
-        elif len(member_charging_cnt[member_charging_cnt['member']=='회원']) > 0  :
+        if len(member_charging_cnt[member_charging_cnt['member']=='회원']) > 0  :
             new_station['memberChargeCnt'] = member_charging_cnt[member_charging_cnt['member']=='회원']['count'].iloc[0]
-        else :
+        if len(member_charging_cnt[member_charging_cnt['member']=='비회원']) > 0 :
             new_station['nonMemberChargeCnt'] = member_charging_cnt[member_charging_cnt['member'] == '비회원']['count'].iloc[0]
 
         week_type = charging_stat[['is_weekend', 'occupation']]
