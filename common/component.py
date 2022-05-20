@@ -71,7 +71,6 @@ class base:
         return charging_stat
 
 
-
     def calc_statistics(self, df, *args):
         df_grouped = df.groupby(['station_name', *args])
         df1 = df_grouped.size().reset_index(name='charging_cnt')
@@ -112,11 +111,8 @@ class base:
         :param df: a base dataframe
         :return: the dataframe with charging info by day
         """
-<<<<<<< HEAD
         df_grouped = df.groupby(['station_name', 'is_weekend', 'date', 'weekday'])
-=======
         df_grouped = df.groupby(['station_name', 'charger_code', 'is_weekend', 'date'])
->>>>>>> origin/master
         df2 = df_grouped.size().reset_index(name='charging_cnt')
         df2['charging_capacity'] = list(df_grouped['charging_capacity'].sum())
         df2['charging_time'] = list(df_grouped['charging_time'].sum() / 60)
