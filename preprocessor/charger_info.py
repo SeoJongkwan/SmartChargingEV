@@ -32,6 +32,10 @@ charger_original_col = data[IT_col].reset_index(drop=True)
 # 기간 설정
 start_date = date(2022, 1, 1)
 charger = mt.select_time(charger_original_col, 'start_time', start_date, 4)
+charger = charger[charger['charging_capacity'] > 0] # 충전량 > 0
+
+# 회원유형 구분
+charger['member'] = np.where(charger['member_name'] !='비회원', '회원', np.where(charger['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원'))
 
 # 시간정보 추가
 component = component.base(charger)
@@ -43,7 +47,7 @@ charger['is_weekend'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
 stations = charger.drop_duplicates(['station_name', 'charger_code'], keep='first')          #충전소이름, 충전기코드 항목 추출
 stations = stations[['station_name', 'charger_code']].reset_index(drop=True)
 
-station_cnt = [*range(0,40)]
+station_cnt = [*range(0,47)]
 for n in station_cnt:
     station_name = stations.iloc[n, 0]
     charger_code = stations.iloc[n, 1]
@@ -79,6 +83,14 @@ for n in station_cnt:
         week_min = hour_charging_stat[hour_charging_stat['is_weekend']==0].sort_values(by='occupation', ascending=True).head(criteria)
         weekend_max = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=False).head(criteria)
         weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_values(by='occupation', ascending=True).head(criteria)
+
+        member_charging_cnt = select_charger.groupby(['station_name', 'charger_code', 'member'])['member'].agg(['count']).reset_index() # 멤버별 충전횟수
+        if len(member_charging_cnt[member_charging_cnt['member']=='로밍회원']) > 0  :
+            new_station['roamingChargeCnt'] = member_charging_cnt[member_charging_cnt['member']=='로밍회원']['count'].iloc[0]
+        elif len(member_charging_cnt[member_charging_cnt['member']=='회원']) > 0  :
+            new_station['memberChargeCnt'] = member_charging_cnt[member_charging_cnt['member']=='회원']['count'].iloc[0]
+        else :
+            new_station['nonMemberChargeCnt'] = member_charging_cnt[member_charging_cnt['member'] == '비회원']['count'].iloc[0]
 
         week_type = charging_stat[['is_weekend', 'occupation']]
         if len(week_type) == 2:
