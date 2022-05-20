@@ -105,3 +105,17 @@ def select_station(station_name, charger_code):
     else:
         df1.columns = [desc[0] for desc in cursor.description]
         return df1
+
+def all_stations():
+    """
+   :return: result for all stations
+   """
+    raw_msg = f"SELECT station_id, station_name, charger_id, address FROM charger_station"
+    cursor.execute(raw_msg)
+    df1 = pd.DataFrame(cursor.fetchall())
+    if df1.empty:
+        print('\nEmpty information from charger_station table')
+    else:
+        df1.columns = [desc[0] for desc in cursor.description]
+        df1 = df1.sort_values(by=['station_name']).reset_index(drop=True)
+        return df1
