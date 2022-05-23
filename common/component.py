@@ -1,3 +1,4 @@
+from common import info
 import pandas as pd
 
 class base:
@@ -51,8 +52,6 @@ class base:
                 dc_charger['charging_time'][i] = abs(dc_charger['ct_next'][i])
         return dc_charger
 
-
-
     def charger_avg_stat(self, df, *args):
         df_grouped = df.groupby(['station_name', *args])
         df1 = df_grouped.size().reset_index(name='chargingCnt')
@@ -60,3 +59,20 @@ class base:
         df1['chargingTime'] = list(df_grouped['chargingTime'].mean() / 60)
         df1['occupation'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60) * 100), 2)
         return df1
+
+    def timezone_condition(self, x):
+        if x < 6:
+            return info.dc_tz[0]
+        elif x >= 6 and x < 12:
+            return info.dc_tz[1]
+        elif x >= 12 and x < 18:
+            return info.dc_tz[2]
+        else: return info.dc_tz[3]
+
+    def timezone_classification(self, df, separator):
+        if len(df) > 0 :
+            df['timezone'] = df['hour'].apply(self.timezone_condition)
+            timezone_sum = df.groupby('timezone')['occupation'].sum()
+            timezone = timezone_sum.idxmax() if separator is 'max' else timezone_sum.idxmin()
+        else : timezone = ''
+        return timezone

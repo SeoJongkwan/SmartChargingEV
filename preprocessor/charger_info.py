@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import date
 import os
 from common import component, info
@@ -35,6 +36,9 @@ chargerHistory = mt.select_time(filterCharger, 'start_time', startDate, 4)
 charger = chargerHistory[chargerHistory['charging_capacity'] > 0]           # 충전량 > 0
 charger = charger.dropna(subset=['start_time', 'end_time'])
 print(f'Registered Usage History: {len(usageHistory)} (Capacity>0): {len(charger)}')
+
+# 회원유형 구분
+charger['member'] = np.where(charger['member_name'] !='비회원', '회원', np.where(charger['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원'))
 
 # 충전시간(seconds), 주중/주말 구분
 component = component.base(charger)
@@ -81,8 +85,7 @@ for n in range(len(exStations)):
         # hourly_avg_stat = component.charger_avg_stat(selectCharger, 'hour')
         isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'hour')
 
-
-        #주중/주말 최대,최소 충전시간대(criteria 변수를 통해 시간대 개수 정의)
+        #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
         criteria = 5
         weekMax = isweek_avg_stat[isweek_avg_stat['isWeek'] == 0].sort_values(by='occupation', ascending=False).head(criteria)
         weekMin = isweek_avg_stat[isweek_avg_stat['isWeek'] == 0].sort_values(by='occupation', ascending=True).head(criteria)
@@ -93,6 +96,12 @@ for n in range(len(exStations)):
         newCharger['weekdayMinorHour'] = str(weekMin['hour'].values)
         newCharger['weekendMajorHour'] = str(weekendMax['hour'].values)
         newCharger['weekendMinorHour'] = str(weekendMin['hour'].values)
+
+        #주중/주말 최대,최소 충전시간대
+        newCharger['weekdayMajorTimezone'] = component.timezone_classification(weekMax, 'max')
+        newCharger['weekdayMinorTimezone'] = component.timezone_classification(weekMin, 'min')
+        newCharger['weekendMajorTimezone'] = component.timezone_classification(weekendMax, 'max')
+        newCharger['weekendMinorTimezone'] = component.timezone_classification(weekendMin, 'min')
 
         #주중/주말 평균 이용률
         weekType = isweek_avg_stat.groupby(['station_name', 'isWeek']).mean().reset_index()
@@ -106,6 +115,15 @@ for n in range(len(exStations)):
             newCharger['weekendOccupation'] = round(weekType.iloc[0]['occupation'], 2)
         else:
             print("No weekType")
+
+        userChargingCnt = selectCharger.groupby(['station_name', 'charger_code', 'member'])['member'].agg(['count']).reset_index()  # 멤버별 충전횟수
+
+        if len(userChargingCnt[userChargingCnt['member'] == '로밍회원']) > 0:
+            newCharger['roamingChargeCnt'] = userChargingCnt[userChargingCnt['member'] == '로밍회원']['count'].iloc[0]
+        if len(userChargingCnt[userChargingCnt['member'] == '회원']) > 0:
+            newCharger['memberChargeCnt'] = userChargingCnt[userChargingCnt['member'] == '회원']['count'].iloc[0]
+        if len(userChargingCnt[userChargingCnt['member'] == '비회원']) > 0:
+            newCharger['nonMemberChargeCnt'] = userChargingCnt[userChargingCnt['member'] == '비회원']['count'].iloc[0]
 
         charger_file = 'charger_list.csv'
         if os.path.isfile(doc_path + charger_file):
