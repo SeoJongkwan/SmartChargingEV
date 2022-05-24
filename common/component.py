@@ -53,17 +53,13 @@ class base:
         return dc_charger
 
     def charger_avg_stat(self, df, *args):
-        # df_grouped = df.groupby([*args])
-        # # df1 = df_grouped.size().reset_index(name='chargingCnt')
-        # df1 = df_grouped['chargingTime', 'charging_capacity'].apply(sum).reset_index()
-        # df1['chargingTime'] = df['chargingTime'] / 60
-        # df1['occupation'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60) * 100), 2)
-        # df2 = round(df1.groupby('isWeek').mean(), 1)
-
         df_grouped = df.groupby([*args])
         df1 = df_grouped[['chargingTime', 'charging_capacity']].apply(sum).reset_index()
         df1['occupation'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
-        df2 = round(df1.groupby('isWeek').mean().reset_index(), 1)
+        if 'hour' in args:
+            df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
+        else:
+            df2 = round(df1.groupby('isWeek').mean().reset_index(), 1)
         return df2
 
     def timezone_condition(self, x):
