@@ -72,10 +72,6 @@ for n in range(len(exStations)):
         newCharger['chargerOpTIme'] = info.charger_opTime[0]
         newCharger['chargerTarget'] = info.charger_target[0]
 
-        #1회 평균 통계값
-        newCharger['1tChargeTime'] = round(selectCharger['chargingTime'].mean() / 60, 2)
-        newCharger['1tChargeCap'] = round(selectCharger['charging_capacity'].mean(), 2)
-
         # monthly_avg_stat = component.charger_avg_stat(selectCharger, 'month')
         # weekday_avg_stat = component.charger_avg_stat(selectCharger, 'weekday')
         # daily_avg_stat = component.charger_avg_stat(selectCharger, 'date')
@@ -90,31 +86,35 @@ for n in range(len(exStations)):
         weekendMax = isweek_avg_stat[isweek_avg_stat['isWeek'] == 1].sort_values(by='occupation', ascending=False).head(criteria)
         weekendMin = isweek_avg_stat[isweek_avg_stat['isWeek'] == 1].sort_values(by='occupation', ascending=True).head(criteria)
 
-        newCharger['weekdayMajorHour'] = str(weekMax['hour'].values)
-        newCharger['weekdayMinorHour'] = str(weekMin['hour'].values)
-        newCharger['weekendMajorHour'] = str(weekendMax['hour'].values)
-        newCharger['weekendMinorHour'] = str(weekendMin['hour'].values)
+        newCharger['wdMajorHour'] = str(weekMax['hour'].values)
+        newCharger['wdMinorHour'] = str(weekMin['hour'].values)
+        newCharger['wkndMajorHour'] = str(weekendMax['hour'].values)
+        newCharger['wkndMinorHour'] = str(weekendMin['hour'].values)
 
         #주중/주말 최대,최소 충전시간대
-        newCharger['weekdayMajorTimezone'] = component.timezone_classification(weekMax, 'max')
-        newCharger['weekdayMinorTimezone'] = component.timezone_classification(weekMin, 'min')
-        newCharger['weekendMajorTimezone'] = component.timezone_classification(weekendMax, 'max')
-        newCharger['weekendMinorTimezone'] = component.timezone_classification(weekendMin, 'min')
+        newCharger['wdMajorTimezone'] = component.timezone_classification(weekMax, 'max')
+        newCharger['wdMinorTimezone'] = component.timezone_classification(weekMin, 'min')
+        newCharger['wkndMajorTimezone'] = component.timezone_classification(weekendMax, 'max')
+        newCharger['wkndMinorTimezone'] = component.timezone_classification(weekendMin, 'min')
 
         #주중/주말 평균 이용률
         weekType = isweek_occp_stat.groupby(['isWeek']).mean().reset_index()
 
         if len(weekType) == 2:
-            newCharger['weekdayOccupation'] = round(weekType.iloc[0]['occupation'], 2)
-            newCharger['weekendOccupation'] = round(weekType.iloc[1]['occupation'], 2)
+            newCharger['wdOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+            newCharger['wkndOccupation'] = round(weekType.iloc[1]['occupation'], 2)
         elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 0:
-            newCharger['weekdayOccupation'] = round(weekType.iloc[0]['occupation'], 2)
-            newCharger['weekendOccupation'] = 0
+            newCharger['wdOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+            newCharger['wkndOccupation'] = 0
         elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 1:
-            newCharger['weekdayOccupation'] = 0
-            newCharger['weekendOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+            newCharger['wdOccupation'] = 0
+            newCharger['wkndOccupation'] = round(weekType.iloc[0]['occupation'], 2)
         else:
             print("No weekType")
+
+        #평균 통계값
+        newCharger['avgChargeTime'] = round(selectCharger['chargingTime'].mean() / 60, 2)
+        newCharger['avgChargeCap'] = round(selectCharger['charging_capacity'].mean(), 2)
 
         charger_file = 'charger_list.csv'
         if os.path.isfile(doc_path + charger_file):
