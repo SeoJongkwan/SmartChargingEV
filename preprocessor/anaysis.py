@@ -94,8 +94,8 @@ weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_value
 
 # charger_chart.show_occupation_cnt(hour_charging_stat[hour_charging_stat['is_weekend']==1], 'hour', '전체 충전소')
 
-# # 회원유형 구분
-# cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'] == '', '비회원', '로밍회원'))
+# 회원유형 구분
+# cs_date['member'] = np.where(cs_date['member_name'] !='비회원', '회원', np.where(cs_date['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원'))
 #
 # member_type = info.member_type[0] # 0: 회원, 1: 로밍회원, 2:비회원
 # print(f"member type: {member_type}")
@@ -138,4 +138,3 @@ weekend_min = hour_charging_stat[hour_charging_stat['is_weekend']==1].sort_value
 # member_info.show_info_ratio('paying_method')
 # # 멤버별 비중차트
 # member_info.show_info_ratio_group('paying_method')
-

@@ -109,7 +109,9 @@ for n in range(len(exStations)):
             newCharger['weekendOccupation'] = round(weekType.iloc[1]['occupation'], 2)
         elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 0:
             newCharger['weekdayOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+            newCharger['weekendOccupation'] = 0
         elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 1:
+            newCharger['weekdayOccupation'] = 0
             newCharger['weekendOccupation'] = round(weekType.iloc[0]['occupation'], 2)
         else:
             print("No weekType")
@@ -124,4 +126,3 @@ for n in range(len(exStations)):
         else:
             newCharger.to_csv(doc_path + charger_file, index=False, encoding='utf-8')
             print("\nNew charger is registered.")
-
