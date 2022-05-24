@@ -37,9 +37,6 @@ charger = chargerHistory[chargerHistory['charging_capacity'] > 0]           # �
 charger = charger.dropna(subset=['start_time', 'end_time'])
 print(f'Registered Usage History: {len(usageHistory)} (Capacity>0): {len(charger)}')
 
-# 회원유형 구분
-charger['member'] = np.where(charger['member_name'] !='비회원', '회원', np.where(charger['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원'))
-
 # 충전시간(seconds), 주중/주말 구분
 component = component.base(charger)
 charger = component.time_split('start_time')
@@ -83,7 +80,7 @@ for n in range(len(exStations)):
         # weekday_avg_stat = component.charger_avg_stat(selectCharger, 'weekday')
         # daily_avg_stat = component.charger_avg_stat(selectCharger, 'date')
         # hourly_avg_stat = component.charger_avg_stat(selectCharger, 'hour')
-        isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'hour')
+        isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'date')
 
         #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
         criteria = 5
@@ -115,15 +112,6 @@ for n in range(len(exStations)):
             newCharger['weekendOccupation'] = round(weekType.iloc[0]['occupation'], 2)
         else:
             print("No weekType")
-
-        userChargingCnt = selectCharger.groupby(['station_name', 'charger_code', 'member'])['member'].agg(['count']).reset_index()  # 멤버별 충전횟수
-
-        if len(userChargingCnt[userChargingCnt['member'] == '로밍회원']) > 0:
-            newCharger['roamingChargeCnt'] = userChargingCnt[userChargingCnt['member'] == '로밍회원']['count'].iloc[0]
-        if len(userChargingCnt[userChargingCnt['member'] == '회원']) > 0:
-            newCharger['memberChargeCnt'] = userChargingCnt[userChargingCnt['member'] == '회원']['count'].iloc[0]
-        if len(userChargingCnt[userChargingCnt['member'] == '비회원']) > 0:
-            newCharger['nonMemberChargeCnt'] = userChargingCnt[userChargingCnt['member'] == '비회원']['count'].iloc[0]
 
         charger_file = 'charger_list.csv'
         if os.path.isfile(doc_path + charger_file):
