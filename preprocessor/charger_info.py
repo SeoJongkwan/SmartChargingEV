@@ -80,7 +80,8 @@ for n in range(len(exStations)):
         # weekday_avg_stat = component.charger_avg_stat(selectCharger, 'weekday')
         # daily_avg_stat = component.charger_avg_stat(selectCharger, 'date')
         # hourly_avg_stat = component.charger_avg_stat(selectCharger, 'hour')
-        isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'date')
+        isweek_occp_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'date')
+        isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'hour')
 
         #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
         criteria = 5
@@ -101,7 +102,7 @@ for n in range(len(exStations)):
         newCharger['weekendMinorTimezone'] = component.timezone_classification(weekendMin, 'min')
 
         #주중/주말 평균 이용률
-        weekType = isweek_avg_stat.groupby(['station_name', 'isWeek']).mean().reset_index()
+        weekType = isweek_occp_stat.groupby(['isWeek']).mean().reset_index()
 
         if len(weekType) == 2:
             newCharger['weekdayOccupation'] = round(weekType.iloc[0]['occupation'], 2)

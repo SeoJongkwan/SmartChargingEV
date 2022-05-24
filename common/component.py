@@ -61,7 +61,7 @@ class base:
         # df2 = round(df1.groupby('isWeek').mean(), 1)
 
         df_grouped = df.groupby([*args])
-        df1 = df_grouped['chargingTime', 'charging_capacity'].apply(sum).reset_index()
+        df1 = df_grouped[['chargingTime', 'charging_capacity']].apply(sum).reset_index()
         df1['occupation'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         df2 = round(df1.groupby('isWeek').mean().reset_index(), 1)
         return df2
@@ -79,6 +79,6 @@ class base:
         if len(df) > 0 :
             df['timezone'] = df['hour'].apply(self.timezone_condition)
             timezone_sum = df.groupby('timezone')['occupation'].sum()
-            timezone = timezone_sum.idxmax() if separator is 'max' else timezone_sum.idxmin()
+            timezone = timezone_sum.idxmax() if separator == 'max' else timezone_sum.idxmin()
         else : timezone = ''
         return timezone
