@@ -79,6 +79,22 @@ for n in range(len(exStations)):
         isweek_occp_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'date')
         isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'hour')
 
+
+        #주중/주말 평균 이용률
+        weekType = isweek_occp_stat.groupby(['isWeek']).mean().reset_index()
+        if len(weekType) == 2:
+            newCharger['wdOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+            newCharger['wkndOccupation'] = round(weekType.iloc[1]['occupation'], 2)
+        elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 0:
+            newCharger['wdOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+            newCharger['wkndOccupation'] = 0
+        elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 1:
+            newCharger['wdOccupation'] = 0
+            newCharger['wkndOccupation'] = round(weekType.iloc[0]['occupation'], 2)
+        else:
+            print("No weekType")
+
+
         #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
         criteria = 5
         weekMax = isweek_avg_stat[isweek_avg_stat['isWeek'] == 0].sort_values(by='occupation', ascending=False).head(criteria)
@@ -96,21 +112,6 @@ for n in range(len(exStations)):
         newCharger['wdMinorTimezone'] = component.timezone_classification(weekMin, 'min')
         newCharger['wkndMajorTimezone'] = component.timezone_classification(weekendMax, 'max')
         newCharger['wkndMinorTimezone'] = component.timezone_classification(weekendMin, 'min')
-
-        #주중/주말 평균 이용률
-        weekType = isweek_occp_stat.groupby(['isWeek']).mean().reset_index()
-
-        if len(weekType) == 2:
-            newCharger['wdOccupation'] = round(weekType.iloc[0]['occupation'], 2)
-            newCharger['wkndOccupation'] = round(weekType.iloc[1]['occupation'], 2)
-        elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 0:
-            newCharger['wdOccupation'] = round(weekType.iloc[0]['occupation'], 2)
-            newCharger['wkndOccupation'] = 0
-        elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 1:
-            newCharger['wdOccupation'] = 0
-            newCharger['wkndOccupation'] = round(weekType.iloc[0]['occupation'], 2)
-        else:
-            print("No weekType")
 
         #평균 통계값
         newCharger['avgChargeTime'] = round(selectCharger['chargingTime'].mean() / 60, 2)
