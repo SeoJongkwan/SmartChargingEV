@@ -123,6 +123,7 @@ for n in range(len(exStations)):
             addStation = pd.concat([storedStations, newCharger]).reset_index(drop=True)                             # 기존 충전소 목록에서 신규 충전소 추가
             addStation.duplicated(['station_name', 'charger_id'], keep='first')
             lastStation = addStation.drop_duplicates(['station_name', 'charger_id']).reset_index(drop=True)         # 기존 충전소 목록에서 신규 추가 충전소 중복제거
+            lastStation = component.utilization_gp(lastStation)
             lastStation.to_csv(doc_path + charger_file, index=False, encoding='utf-8')
         else:
             newCharger.to_csv(doc_path + charger_file, index=False, encoding='utf-8')

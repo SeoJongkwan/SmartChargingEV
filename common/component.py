@@ -47,3 +47,12 @@ class base:
         else:
             timezone = ''
         return timezone
+
+    def utilization_gp(self, df):
+        wdCond = df['wdUtilization'].between(1, 20)
+        wkndCond = df['wkndUtilization'].between(1, 20)
+        wdRange = df[wdCond]['wdUtilization']
+        wkndRange = df[wkndCond]['wkndUtilization']
+        df['wdRank'] = pd.cut(wdRange, 5, labels=[1, 2, 3, 4, 5], right=False)
+        df['wkndRank'] = pd.cut(wkndRange, 5, labels=[1, 2, 3, 4, 5], right=False)
+        return df
