@@ -108,10 +108,10 @@ for n in range(len(exStations)):
         newCharger['wkndMinHour'] = str(weekendMin['hour'].values)
 
         #주중/주말 최대,최소 충전시간대
-        newCharger['wdMajorTz'] = component.timezone_classification(weekMax, 'max')
-        newCharger['wdMinorTz'] = component.timezone_classification(weekMin, 'min')
-        newCharger['wkndMajorTz'] = component.timezone_classification(weekendMax, 'max')
-        newCharger['wkndMinorTz'] = component.timezone_classification(weekendMin, 'min')
+        newCharger['wdMaxTz'] = component.timezone_classification(weekMax, 'max')
+        newCharger['wdMinTz'] = component.timezone_classification(weekMin, 'min')
+        newCharger['wkndMaxTz'] = component.timezone_classification(weekendMax, 'max')
+        newCharger['wkndMinTz'] = component.timezone_classification(weekendMin, 'min')
 
         #평균 통계값
         newCharger['avgChargeTime'] = round(selectCharger['chargingTime'].mean() / 60, 2)
