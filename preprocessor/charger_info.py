@@ -86,7 +86,7 @@ for n in range(len(exStations)):
             newCharger['wdUtilization'] = round(weekType.iloc[0]['utilization'], 2)
             newCharger['wkndUtilization'] = round(weekType.iloc[1]['utilization'], 2)
         elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 0:
-            newCharger['wdOUtilization'] = round(weekType.iloc[0]['utilization'], 2)
+            newCharger['wdUtilization'] = round(weekType.iloc[0]['utilization'], 2)
             newCharger['wkndUtilization'] = 0
         elif len(weekType) == 1 and weekType.iloc[0]['isWeek'] == 1:
             newCharger['wdUtilization'] = 0
