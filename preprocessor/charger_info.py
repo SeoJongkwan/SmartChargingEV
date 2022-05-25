@@ -56,7 +56,7 @@ for n in range(len(exStations)):
     stationName = exStations.iloc[n, 1]
     chargerId = exStations.iloc[n, 2]
     print(f"{n} Select station: {stationName} / charger id: {chargerId}")
-    selectStation = charger[charger['station_name'] == '인덕원 IT밸리'].reset_index(drop=True)
+    selectStation = charger[charger['station_name'] == stationName].reset_index(drop=True)
     selectCharger = selectStation[selectStation['charger_code'] == chargerId].reset_index(drop=True)
     if selectCharger.empty:
         print("There are Station but, no Charger ID")                               #DB에는 충전기코드가 등록되어 있지만 신규 파일에는 없음
