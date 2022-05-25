@@ -18,13 +18,15 @@ class base:
         self.df['minute'] = self.df[column].dt.minute
         return self.df
 
-
     def charger_avg_stat(self, df, *args):
         df_grouped = df.groupby([*args])
         df1 = df_grouped[['chargingTime', 'charging_capacity']].apply(sum).reset_index()
         df1['utilization'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         if 'hour' in args:
-            df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
+            if 'date' in args:
+                df2 = round(df1.groupby(['isWeek', 'hour']).mean().reset_index(), 1)
+            else:
+                df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
         else:
             df2 = round(df1.groupby('isWeek').mean().reset_index(), 1)
         return df2
