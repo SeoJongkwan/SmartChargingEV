@@ -16,10 +16,12 @@ pd.set_option('mode.chained_assignment',  None)
 # charger_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
 
 doc_path = '../doc/'
+registeredCharger = 'regStations.csv'
+chargerList = 'charger_list.csv'
 
 # get_regStations = mt.all_stations()                                       #DB 등록된 충전소 최초 1회 load
-# get_regStations.to_csv(doc_path + 'regStations.csv', index=False, encoding='cp949')
-regStations = pd.read_csv(doc_path + 'regStations.csv', encoding='cp949')
+# get_regStations.to_csv(doc_path + registeredCharger, index=False, encoding='cp949')
+regStations = pd.read_csv(doc_path + registeredCharger, encoding='cp949')
 print(f'Registered Charger: {len(regStations)}')
 
 usageHistory = pd.read_csv(doc_path + 'charger_usage_history.csv')          #충전기 사용내역 load
@@ -55,7 +57,7 @@ print(f'New Stations corresponding DB: {len(exStations)}')
 for n in range(len(exStations)):
     stationName = exStations.iloc[n, 1]
     chargerId = exStations.iloc[n, 2]
-    print(f"{n} Select station: {stationName} / charger id: {chargerId}")
+    print(f"{n} station: {stationName} / charger id: {chargerId}")
     selectStation = charger[charger['station_name'] == stationName].reset_index(drop=True)
     selectCharger = selectStation[selectStation['charger_code'] == chargerId].reset_index(drop=True)
     if selectCharger.empty:
@@ -75,7 +77,7 @@ for n in range(len(exStations)):
         # monthly_avg_stat = component.charger_avg_stat(selectCharger, 'month')
         # weekday_avg_stat = component.charger_avg_stat(selectCharger, 'weekday')
         # daily_avg_stat = component.charger_avg_stat(selectCharger, 'date')
-        # hourly_avg_stat = component.charger_avg_stat(selectCharger, 'hour')
+        hourly_avg_stat = component.charger_avg_stat(selectCharger, 'hour')
         isweek_occp_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'date')
         isweek_avg_stat = component.charger_avg_stat(selectCharger, 'isWeek', 'hour')
         isweek_hour_stat = component.charger_avg_stat(selectCharger, 'date', 'isWeek', 'hour')
@@ -108,23 +110,27 @@ for n in range(len(exStations)):
         newCharger['wkndMinHour'] = str(weekendMin['hour'].values)
 
         #주중/주말 최대,최소 충전시간대
-        newCharger['wdMaxTz'] = component.timezone_classification(weekMax, 'max')
-        newCharger['wdMinTz'] = component.timezone_classification(weekMin, 'min')
-        newCharger['wkndMaxTz'] = component.timezone_classification(weekendMax, 'max')
-        newCharger['wkndMinTz'] = component.timezone_classification(weekendMin, 'min')
+        # newCharger['wdMaxTz'] = component.timezone_classification(weekMax, 'max')
+        # newCharger['wdMinTz'] = component.timezone_classification(weekMin, 'min')
+        # newCharger['wkndMaxTz'] = component.timezone_classification(weekendMax, 'max')
+        # newCharger['wkndMinTz'] = component.timezone_classification(weekendMin, 'min')
 
         #평균 통계값
         newCharger['avgChargeTime'] = round(selectCharger['chargingTime'].mean() / 60, 2)
         newCharger['avgChargeCap'] = round(selectCharger['charging_capacity'].mean(), 2)
 
-        charger_file = 'charger_list.csv'
-        if os.path.isfile(doc_path + charger_file):
-            storedStations = pd.read_csv(doc_path + charger_file, encoding='utf-8')
-            addStation = pd.concat([storedStations, newCharger]).reset_index(drop=True)                             # 기존 충전소 목록에서 신규 충전소 추가
+        if os.path.isfile(doc_path + chargerList):
+            storedStations = pd.read_csv(doc_path + chargerList, encoding='utf-8')
+            addStation = pd.concat([storedStations, newCharger]).reset_index(drop=True)                             #기존 충전소 목록에서 신규 충전소 추가
             addStation.duplicated(['station_name', 'charger_id'], keep='first')
-            lastStation = addStation.drop_duplicates(['station_name', 'charger_id']).reset_index(drop=True)         # 기존 충전소 목록에서 신규 추가 충전소 중복제거
-            lastStation = component.utilization_gp(lastStation)
-            lastStation.to_csv(doc_path + charger_file, index=False, encoding='utf-8')
+            lastStation = addStation.drop_duplicates(['station_name', 'charger_id']).reset_index(drop=True)         #기존 충전소 목록에서 신규 추가 충전소 중복제거
+            lastStation.to_csv(doc_path + chargerList, index=False, encoding='utf-8')
         else:
-            newCharger.to_csv(doc_path + charger_file, index=False, encoding='utf-8')
+            newCharger.to_csv(doc_path + chargerList, index=False, encoding='utf-8')
             print("\nNew charger is registered.")
+
+# 충전기 이용률 그룹화
+stations = pd.read_csv(doc_path + chargerList, encoding='utf-8')
+stations.insert(9, 'wdrank', component.utilization_group(stations['wdUtilization']))
+stations.insert(11, 'wkndrank', component.utilization_group(stations['wkndUtilization']))
+stations.to_csv(doc_path + chargerList, index=False, encoding='utf-8')

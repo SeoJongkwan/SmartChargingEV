@@ -1,5 +1,8 @@
-from common import info
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from common import info
 
 class base:
     def __init__(self, df):
@@ -50,11 +53,25 @@ class base:
             timezone = ''
         return timezone
 
-    def utilization_gp(self, df):
-        wdCond = df['wdUtilization'].between(1, 20)
-        wkndCond = df['wkndUtilization'].between(1, 20)
-        wdRange = df[wdCond]['wdUtilization']
-        wkndRange = df[wkndCond]['wkndUtilization']
-        df['wdRank'] = pd.cut(wdRange, 5, labels=[1, 2, 3, 4, 5], right=False)
-        df['wkndRank'] = pd.cut(wkndRange, 5, labels=[1, 2, 3, 4, 5], right=False)
-        return df
+
+    def check_util_outlier(self, data):
+        q1, q3 = np.percentile(data, [25, 75])
+        sns.boxplot(x=data, color='salmon')
+        plt.title(f"Outlier Check based IQR({round(q3-q1,2)})")
+        plt.show()
+
+    def utilization_group(self, data):
+        self.check_util_outlier(data)
+        util_division = []
+        for n in data:
+            if n <= 1.5:
+                util_division.append(1)
+            elif (n > 1.5) and (n <= 3.0):
+                util_division.append(2)
+            elif (n > 3.0) and (n <= 4.3):
+                util_division.append(3)
+            elif (n > 4.3) and ((n <= 6.0) | (n <= np.round(np.mean(data), 2))):
+                util_division.append(4)
+            else:
+                util_division.append(5)
+        return util_division

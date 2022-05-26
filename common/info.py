@@ -19,7 +19,11 @@ charger_type = {0:"완속", 1:"급속"}
 charger_target = {0:"all", 1:"입주민"}
 charger_opTime = {0:24, 1:[9,18]}
 member_type = {0:"회원", 1:"로밍회원", 2:"비회원"}
-dc_tz = {0:"새벽", 1:"오전", 2:"오후", 3:"밤"} #급속 충전기 이용현황 참조
+dc_tz = {0:"새벽", 1:"오전", 2:"오후", 3:"밤"}
+
+#value는 min 의미(ex.20분), 90분 이상은 특정값 정의 -> component.py의 utilization_group 함수에서 사용
+minutes_by_utilization = {1: 20, 2: 40, 3: 60, 4: 90, 5: 200}
+
 
 # -- Message Type information ---------------------------------------------------
 mt_dict = {
