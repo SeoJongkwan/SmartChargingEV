@@ -6,15 +6,6 @@ from common import component, info
 from extractor import mt
 pd.set_option('mode.chained_assignment',  None)
 
-# DB에서 충전기 사용내역 데이터 load
-# usage_history = mt.select_usage('charger_chargerusage')
-# usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
-
-# 충전소 선택
-# charger_station = info.station_info[1]
-# print(f"charger station: {charger_station}")
-# charger_original = usage_history[usage_history["charger_num"] == charger_station[3]].reset_index(drop=True)
-
 doc_path = '../doc/'
 registeredCharger = 'regStations.csv'
 chargerList = 'charger_list.csv'
@@ -53,6 +44,7 @@ newStations = newStations[['station_name', 'charger_code']].sort_values(by=['sta
 exStations = regStations[regStations['station_name'].isin(newStations['station_name'])].reset_index(drop=True)
 print(f'New Stations corresponding DB: {len(exStations)}')
 
+chargerCheck = []                                                           #신규츙전소 저장 리스트
 # n = 2
 for n in range(len(exStations)):
     stationName = exStations.iloc[n, 1]
@@ -61,7 +53,7 @@ for n in range(len(exStations)):
     selectStation = charger[charger['station_name'] == stationName].reset_index(drop=True)
     selectCharger = selectStation[selectStation['charger_code'] == chargerId].reset_index(drop=True)
     if selectCharger.empty:
-        print("There are Station but, no Charger ID")                               #DB에는 충전기코드가 등록되어 있지만 신규 파일에는 없음
+        print("There are Station but, no Charger ID\n")                               #DB에는 충전기코드가 등록되어 있지만 신규 파일에는 없음
     else:
         selectCharger['paid_fee'] = selectCharger['paid_fee'].apply(lambda x: x.replace(',', '')).astype('int')
         selectCharger['charging_fee'] = selectCharger['charging_fee'].apply(lambda x: x.replace(',', '')).astype('int')
@@ -119,18 +111,13 @@ for n in range(len(exStations)):
         newCharger['avgChargeTime'] = round(selectCharger['chargingTime'].mean() / 60, 2)
         newCharger['avgChargeCap'] = round(selectCharger['charging_capacity'].mean(), 2)
 
-        if os.path.isfile(doc_path + chargerList):
-            storedStations = pd.read_csv(doc_path + chargerList, encoding='utf-8')
-            addStation = pd.concat([storedStations, newCharger]).reset_index(drop=True)                             #기존 충전소 목록에서 신규 충전소 추가
-            addStation.duplicated(['station_name', 'charger_id'], keep='first')
-            lastStation = addStation.drop_duplicates(['station_name', 'charger_id']).reset_index(drop=True)         #기존 충전소 목록에서 신규 추가 충전소 중복제거
-            lastStation.to_csv(doc_path + chargerList, index=False, encoding='utf-8')
-        else:
-            newCharger.to_csv(doc_path + chargerList, index=False, encoding='utf-8')
-            print("\nNew charger is registered.")
+        chargerCheck.append(newCharger)                                                 #신규 충전기 추가
+        print("New charger is registered\n")
 
+
+
+stations = pd.concat(chargerCheck)
 # 충전기 이용률 그룹화
-stations = pd.read_csv(doc_path + chargerList, encoding='utf-8')
 stations.insert(9, 'wdrank', component.utilization_group(stations['wdUtilization']))
 stations.insert(11, 'wkndrank', component.utilization_group(stations['wkndUtilization']))
 stations.to_csv(doc_path + chargerList, index=False, encoding='utf-8')
