@@ -69,7 +69,7 @@ for n in range(len(ExistStations)):
         # MonthlyAvgStat = comp.charger_avg_stat(SelectCharger, 'month')
         # WeekdayAvgStat = comp.charger_avg_stat(SelectCharger, 'weekday')
         # DailyAvgStat = comp.charger_avg_stat(SelectCharger, 'date')
-        HourlyAvgStat = comp.charger_avg_stat(SelectCharger, 'hour')
+        HourlyAvgStat = comp.charger_avg_stat(SelectCharger, 'date', 'hour')
         IsweekOccpStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'date')
         IsweekAvgStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'hour')
         IsweekHourStat = comp.charger_avg_stat(SelectCharger, 'date', 'isWeek', 'hour')

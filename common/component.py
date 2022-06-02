@@ -26,8 +26,10 @@ class base:
         df1 = df_grouped[['chargingTime', 'charging_capacity']].apply(sum).reset_index()
         df1['utilization'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         if 'hour' in args:
-            if 'date' in args:
+            if 'isWeek' in args:
                 df2 = round(df1.groupby(['isWeek', 'hour']).mean().reset_index(), 1)
+            elif 'date' in args:
+                df2 = round(df1.groupby(['hour']).mean().reset_index(), 1)
             else:
                 df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
         else:

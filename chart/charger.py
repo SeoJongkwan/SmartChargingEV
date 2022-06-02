@@ -19,7 +19,7 @@ class Plot:
             title_period = '일'
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
-        elif period == 'is_weekend':
+        elif period == 'isWeek':
             title_period = '주중/주말'
         else:
             title_period = '월'
@@ -40,7 +40,7 @@ class Plot:
         fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
 
-    def show_occupation_cnt(self, df, period, title):
+    def show_occupation_cap(self, df, period, title):
         """
         :param period: weekday, hour, month
         :return: occupation, charging count => bar & line chart
@@ -51,23 +51,23 @@ class Plot:
             title_period = '일'
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
-        elif period == 'is_weekend':
+        elif period == 'isWeek':
             title_period = '주중/주말'
         else:
             title_period = '월'
 
         fig = go.Figure(
             data=[
-                go.Bar(name='Occupation', x=df[period], y=df['occupation'], yaxis='y', offsetgroup=2,
-                       marker={'color': 'skyblue'}, text=df['occupation']),
+                go.Bar(name='Occupation', x=df[period], y=df['utilization'], yaxis='y', offsetgroup=2,
+                       marker={'color': 'skyblue'}, text=df['utilization']),
 
-                go.Scatter(name='Charging Count', x=df[period], y=df['charging_cnt_mean'], yaxis='y2', marker={'color': 'gold'},
-                       text=df['charging_cnt_mean'])
+                go.Scatter(name='Charging Capacity', x=df[period], y=df['charging_capacity'], yaxis='y2', marker={'color': 'gold'},
+                       text=df['charging_capacity'])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
-                'yaxis': {'title': 'Occupation (%)'},
-                'yaxis2': {'title': 'Charging Count', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
+                'yaxis': {'title': 'Utilization (%)'},
+                'yaxis2': {'title': 'Charging Capacity', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
         if period == 'month':
