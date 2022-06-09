@@ -4,6 +4,7 @@ from datetime import date
 import os
 from common import component, info
 from extractor import mt
+from chart import charger as charger_chart
 pd.set_option('mode.chained_assignment',  None)
 
 DocPath = '../doc/'
@@ -47,6 +48,7 @@ print(f'New Stations corresponding DB: {len(ExistStations)}')
 ChargerCheck = []                                                           #신규츙전소 저장 리스트
 # n = 2
 for n in range(len(ExistStations)):
+# for n in range(20, 30):
     StationName = ExistStations.iloc[n, 1]
     ChargerId = ExistStations.iloc[n, 2]
     print(f"{n} station: {StationName} / charger id: {ChargerId}")
@@ -66,13 +68,18 @@ for n in range(len(ExistStations)):
         NewCharger['chargerOpTIme'] = info.charger_opTime[0]
         NewCharger['chargerTarget'] = info.charger_target[0]
 
-        # MonthlyAvgStat = comp.charger_avg_stat(SelectCharger, 'month')
-        # WeekdayAvgStat = comp.charger_avg_stat(SelectCharger, 'weekday')
-        # DailyAvgStat = comp.charger_avg_stat(SelectCharger, 'date')
+        MonthlyAvgStat = comp.charger_avg_stat(SelectCharger, 'month', 'date')
+        # WeekdayAvgStat = comp.charger_avg_stat(select_charger, 'weekday')
+        # DailyAvgStat = comp.charger_avg_stat(select_charger, 'date')
         HourlyAvgStat = comp.charger_avg_stat(SelectCharger, 'date', 'hour')
         IsweekOccpStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'date')
         IsweekAvgStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'hour')
         IsweekHourStat = comp.charger_avg_stat(SelectCharger, 'date', 'isWeek', 'hour')
+
+        # 이용률과 충전횟수
+        # HourlyAvgStat['charging_time'] = round(HourlyAvgStat['chargingTime'] / 60, 2)
+        # charger_chart = charger_chart.Plot(HourlyAvgStat)
+        # charger_chart.show_occupation_cap(HourlyAvgStat, 'hour', station_name)
 
         #주중/주말 평균 이용률
         WeekType = IsweekOccpStat.groupby(['isWeek']).mean().reset_index()

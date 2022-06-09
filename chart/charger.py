@@ -71,11 +71,11 @@ class Plot:
             }
         )
         if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 이용률 & 충전횟수") #yaxis_range=[0,50]
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 이용률 & 충전량") #yaxis_range=[0,50]
         elif period =='hour':
-            fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 이용률 & 충전횟수")
+            fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 이용률 & 충전량")
         else:
-            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 이용률 & 충전횟수")
+            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 이용률 & 충전량")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 

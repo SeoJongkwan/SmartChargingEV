@@ -18,6 +18,7 @@ charger_place = {0:"공동주택", 1:"휴게소", 2:"직장", 3:"공공건물"}
 charger_type = {0:"완속", 1:"급속"}
 charger_target = {0:"all", 1:"입주민"}
 charger_opTime = {0:24, 1:[9,18]}
+charger_region = {0:"서울", 1:"경기", 2:"인천"}
 member_type = {0:"회원", 1:"로밍회원", 2:"비회원"}
 dc_tz = {0:"새벽", 1:"오전", 2:"오후", 3:"밤"}
 

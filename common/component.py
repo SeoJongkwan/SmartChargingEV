@@ -32,6 +32,8 @@ class base:
                 df2 = round(df1.groupby(['hour']).mean().reset_index(), 1)
             else:
                 df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
+        elif 'month' in args:
+            df2 = round(df1.groupby('month').mean().reset_index(), 1)
         else:
             df2 = round(df1.groupby('isWeek').mean().reset_index(), 1)
         return df2
@@ -66,14 +68,26 @@ class base:
         self.check_util_outlier(data)
         util_division = []
         for n in data:
-            if n <= 1.5:
+            if n <= 1.0:
                 util_division.append(1)
-            elif (n > 1.5) and (n <= 3.0):
+            elif (n > 1.1) and (n <= 2.8):
                 util_division.append(2)
-            elif (n > 3.0) and (n <= 4.3):
+            elif (n > 2.8) and (n <= 4.2):
                 util_division.append(3)
-            elif (n > 4.3) and ((n <= 6.0) | (n <= np.round(np.mean(data), 2))):
+            elif (n > 4.2) and (n <= 5.6):
                 util_division.append(4)
-            else:
+            elif (n > 5.6) and ((n <= 6.9) | (n <= np.round(np.mean(data), 2))):
                 util_division.append(5)
+            else:
+                util_division.append(6)
         return util_division
+
+    def num_users(self, df): # 회원번호, 비회원번호 count하여 이용자 수 계산
+        gp_mem = df.groupby(['month', 'member_number']).size().reset_index(name='cnt')
+        member_num = gp_mem.groupby('month')['member_number'].count().reset_index(name='mem_cnt')
+        gp_nonmem = df.groupby(['month', 'nonmember_number']).size().reset_index(name='cnt')
+        nonmember_num = gp_nonmem.groupby('month')['nonmember_number'].count().reset_index(name='nonmem_cnt')
+        df1 = pd.merge(member_num, nonmember_num, on='month', how='inner')
+        return df1
+
+
