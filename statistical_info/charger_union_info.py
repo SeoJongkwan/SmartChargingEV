@@ -4,6 +4,7 @@ import numpy as np
 from common import info
 from common import component
 from extractor import mt
+from statistical_info import statistical_func
 
 # usage_history = mt.select_usage('charger_chargerusage') # DB의 사용내역 데이터
 # usage_history = usage_history[usage_history['end_time'] > usage_history['start_time']]
@@ -14,6 +15,7 @@ filter_col = ["charging_id", "station_name", "charger_code", "start_time", "end_
 doc_path = '../doc/'
 charger_info = 'charger_list.csv'
 charger_list = pd.read_csv(doc_path + charger_info)
+charger_list = charger_list[charger_list['chargerType'] == '급속'] #급속 충전기
 
 # 사용내역 목록
 usage_history_file = 'charger_usage_history.csv'
@@ -34,7 +36,7 @@ charger = mt.select_time(usage_history, 'start_time', start_date, 4)
 # 시간정보 추가
 comp = component.base(charger)
 charger = comp.time_split('start_time')
-charger['chargingTime'] =round((charger['end_time'] - charger['start_time']).dt.total_seconds(), 2)
+charger['charging_time'] =round((charger['end_time'] - charger['start_time']).dt.total_seconds(), 2)
 charger['isWeek'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
 charger['charger_region'] = info.charger_region[0]
 charger['charger_place'] = info.charger_place[0]
@@ -73,3 +75,6 @@ for n in range(len(exist_stations)):
 
 union_station = pd.concat(info_usage)
 union_station.to_csv(doc_path + 'union_station.csv')
+
+stat_func = statistical_func.base(union_station)
+regional_stat = stat_func.regional_info()
