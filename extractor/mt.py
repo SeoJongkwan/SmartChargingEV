@@ -4,7 +4,6 @@ import psycopg2
 from tqdm import tqdm
 from dateutil.relativedelta import relativedelta
 from common import info
-from exception import MessageTypeException
 
 con = psycopg2.connect(host=info.host, dbname=info.dbname, user=info.user, password=info.password, port=info.port)
 cursor = con.cursor()
@@ -110,7 +109,7 @@ def all_stations():
     """
    :return: result for all stations
    """
-    raw_msg = f"SELECT station_id, station_name, charger_id, address FROM charger_station"
+    raw_msg = "SELECT station_id, station_name, charger_id, address FROM charger_station"
     cursor.execute(raw_msg)
     df1 = pd.DataFrame(cursor.fetchall())
     if df1.empty:

@@ -1,4 +1,4 @@
-# -- DataBase information -----------------------------------------------------
+#DB information
 host = "ev.i-on.net"
 dbname = "evehicle"
 user = "evehicle"

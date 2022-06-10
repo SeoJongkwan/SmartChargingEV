@@ -1,6 +1,3 @@
-class MessageTypeException(Exception):
-    def __init__(
-            self,
-            message="Message Type must use predefined message type"
-    ):
-        self.message = message
+class FileExistException(Exception):
+    def __init__(self):
+        super().__init__("파일이 없습니다.")
