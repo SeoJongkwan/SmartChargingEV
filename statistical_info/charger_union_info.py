@@ -86,16 +86,17 @@ utilization_stat =  stat_func.variable_avg_stat('wd_rank', 'month')
 stat_chart = statistical_chart.Plot(place_stat)
 select_place = info.charger_place[0]
 place = place_stat[place_stat['charger_place']==select_place]
-stat_chart.show_util_cap(place, 'hour', select_place)
+# stat_chart.show_util_cap(place, 'hour', select_place)
 
 # 지역 충전시간, 충전량, 이용률
 region = regional_stat.drop(columns='charger_code')
 # region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간', 'charging_capacity':'충전량', 'utilization':'이용률'}, inplace=True)
-stat_chart.show_region_info(region)
+# stat_chart.show_region_info(region)
 
 # 이용률그룹 충전량과 이용자 수
-select_rank = 6
-utilization = utilization_stat[utilization_stat['wd_rank'] == select_rank]
-stat_chart.show_util_cap(utilization, 'month', select_rank)
-
+select_rank = 5
+rank_df = utilization_stat[utilization_stat['wd_rank'] == select_rank]
 num_users = stat_func.num_users(union_station, 'wd_rank')
+util_rank = pd.merge(rank_df, num_users, on=['month', 'wd_rank' ], how='inner')
+
+stat_chart.show_rank_info(util_rank, select_rank)

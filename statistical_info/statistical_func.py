@@ -21,7 +21,7 @@ class base:
         gp_nonmem = df.groupby(['station_name', 'charger_code', 'month', 'nonmember_number', *args]).size().reset_index(name='cnt')
         nonmember_num = gp_nonmem.groupby(['month', *args])['nonmember_number'].count().reset_index(name='nonmem_cnt')
         df1 = pd.merge(member_num, nonmember_num, on=['month', 'wd_rank' ], how='inner')
-        df1['cnt'] = df1['mem_cnt'] + df1['nonmem_cnt']
+        df1['user_cnt'] = df1['mem_cnt'] + df1['nonmem_cnt']
         return df1
 
     def util_stat(self, *args):

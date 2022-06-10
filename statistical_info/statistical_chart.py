@@ -32,8 +32,8 @@ class Plot:
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
-                'yaxis': {'title': 'Utilization (%)'},
-                'yaxis2': {'title': 'Charging Capacity', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
+                'yaxis': {'title': 'Charging Capacity'},
+                'yaxis2': {'title': 'Utilization (%)', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
         if period == 'month':
@@ -42,6 +42,24 @@ class Plot:
             fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 이용률 & 충전량")
         else:
             fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 이용률 & 충전량")
+        fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
+        fig.show()
+
+    def show_rank_info(self, df, rank):
+        fig = go.Figure(
+            data=[
+                go.Bar(name='Charging Capacity', x=df['month'], y=df['charging_capacity'], yaxis='y',
+                       marker={'color': 'lightblue'}, text=df['charging_capacity']),
+                go.Scatter(name='Num of users', x=df['month'], y=df['user_cnt'], yaxis='y2', line_shape='spline',
+                           mode='lines+markers', marker={'color': 'mediumpurple'}, text=df['user_cnt'])
+            ],
+            layout={
+                'xaxis': {'title': 'month'},
+                'yaxis': {'title': 'Charging Capacity'},
+                'yaxis2': {'title': 'Num of users (명)', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
+            }
+        )
+        fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{rank}그룹 - 월별 충전량 & 이용자 수")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 
