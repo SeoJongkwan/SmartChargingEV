@@ -43,16 +43,17 @@ charger_history = mt.select_time(history_list, 'start_time', start_date, 4)
 charger_history = charger_history[charger_history['charging_capacity'] > 0]           # 충전량 > 0
 charger_history = charger_history.dropna(subset=['start_time', 'end_time'])
 
-# 충전시간, 충전지역, 충전장소, 주중/주말 이용률 그룹, 회원유형 정보 추가
+# 충전시간, 주중/주말, 사용자타입 정보 추가
 comp = component.base(charger_history)
 charger_history = comp.time_split('start_time')
 charger_history['charging_time'] = round((charger_history['end_time'] - charger_history['start_time']).dt.total_seconds(), 2)
 charger_history['is_week'] = charger_history['weekday'].apply(lambda x: 1 if x > 4 else 0)
+charger_history['member_type'] = np.where(charger_history['member_name'] != '비회원', '회원', np.where(charger_history['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원')) # 회원유형 구분
+# 지역, 장소, 이용률그룹 초기화
 charger_history['charger_region'] = info.charger_region[0]
 charger_history['charger_place'] = info.charger_place[0]
 charger_history['wd_rank'] = 1
 charger_history['wknd_rank'] = 1
-charger_history['member_type'] = np.where(charger_history['member_name'] != '비회원', '회원', np.where(charger_history['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원')) # 회원유형 구분
 
 # 사용내역 충전소 목록
 history_station = charger_history.drop_duplicates(['station_name', 'charger_code'], keep='first')
@@ -63,7 +64,7 @@ exist_stations = dc_chargers[dc_chargers['station_name'].isin(history_station['s
 print(f'New Stations corresponding DB: {len(exist_stations)}')
 
 info_usage = []  # 통계정보 저장 리스트                                                          # 통계 통합정보 저장 리스트
-# 사용내역에 통계정보에서 필요한 컬럼 추가
+# 사용내역에 통계정보에서 지역, 장소, 이용률그룹 값 변경
 for n in range(len(exist_stations)):
     station_name = exist_stations.iloc[n, 1]
     charger_id = int(exist_stations.iloc[n, 2])
