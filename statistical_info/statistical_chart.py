@@ -45,7 +45,7 @@ class Plot:
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 
-    def show_rank_info(self, df, rank):
+    def show_rank_info(self, df, title):
         fig = go.Figure(
             data=[
                 go.Bar(name='Charging Capacity', x=df['month'], y=df['charging_capacity'], yaxis='y',
@@ -59,7 +59,7 @@ class Plot:
                 'yaxis2': {'title': 'Num of users (명)', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
-        fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{rank}그룹 - 월별 충전량 & 이용자 수")
+        fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title}그룹 - 월별 충전량 & 이용자 수")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 

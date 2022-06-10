@@ -91,7 +91,6 @@ union_station.to_csv(doc_path + union_file)
 stat_func = statistical_func.base(union_station)
 regional_stat = stat_func.variable_avg_stat(union_station, 'charger_region')
 place_stat = stat_func.variable_avg_stat(union_station, 'charger_place', 'hour')
-utilization_stat =  stat_func.variable_avg_stat(union_station, 'wd_rank', 'month')
 
 # 장소 시간대별 이용률
 stat_chart = statistical_chart.Plot(place_stat)
@@ -105,11 +104,19 @@ region = regional_stat.drop(columns='charger_code')
 # stat_chart.show_region_info(region)
 
 # 이용률그룹 충전량과 이용자 수
-select_rank = 5
-rank_df = utilization_stat[utilization_stat['wd_rank'] == select_rank]
-num_users = stat_func.num_users(union_station, 'wd_rank')
-util_rank = pd.merge(rank_df, num_users, on=['month', 'wd_rank' ], how='inner')
-# stat_chart.show_rank_info(util_rank, select_rank)
+select_week = info.week_type[0][0]
+select_col = 'wd_rank' if select_week == 0 else 'wknd_rank'
+select_rank = 2
+week_df = union_station[(union_station['is_week'] == select_week) & (union_station[select_col] == select_rank)]
+
+if len(week_df) == 0:
+    raise exception.FileExistException
+
+util_stat = stat_func.variable_avg_stat(week_df, 'month')
+num_users = stat_func.num_users(week_df, select_col)
+merge_util = pd.merge(util_stat, num_users, on=['month'], how='inner')
+title = info.week_type[select_week][1] + ' ' + str(select_rank)
+stat_chart.show_rank_info(merge_util, title)
 
 # 전체 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말)
 # monthly_avg_stat = stat_func.variable_avg_stat(union_station, 'month')
@@ -133,4 +140,4 @@ isweek_hour_stat = stat_func.variable_avg_stat(select_charger, 'is_week', 'hour'
 
 # 충전기명 = 충전소명 + 충전기코드
 charger_name = station_name + str(charger_id)
-stat_chart.show_util_cap(monthly_avg_stat, 'month', charger_name)
+# stat_chart.show_util_cap(monthly_avg_stat, 'month', charger_name)
