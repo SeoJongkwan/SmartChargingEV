@@ -35,7 +35,7 @@ class base:
         elif 'month' in args:
             df2 = round(df1.groupby('month').mean().reset_index(), 1)
         else:
-            df2 = round(df1.groupby('isWeek').mean().reset_index(), 1)
+            df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
         return df2
 
     def timezone_condition(self, x):
@@ -81,13 +81,4 @@ class base:
             else:
                 util_division.append(6)
         return util_division
-
-    def num_users(self, df): # 회원번호, 비회원번호 count하여 이용자 수 계산
-        gp_mem = df.groupby(['month', 'member_number']).size().reset_index(name='cnt')
-        member_num = gp_mem.groupby('month')['member_number'].count().reset_index(name='mem_cnt')
-        gp_nonmem = df.groupby(['month', 'nonmember_number']).size().reset_index(name='cnt')
-        nonmember_num = gp_nonmem.groupby('month')['nonmember_number'].count().reset_index(name='nonmem_cnt')
-        df1 = pd.merge(member_num, nonmember_num, on='month', how='inner')
-        return df1
-
 

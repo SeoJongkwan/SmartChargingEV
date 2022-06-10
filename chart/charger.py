@@ -40,7 +40,7 @@ class Plot:
         fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
 
-    def show_occupation_cap(self, df, period, title):
+    def show_utilization_capa(self, df, period, title):
         """
         :param period: weekday, hour, month
         :return: occupation, charging count => bar & line chart
@@ -58,11 +58,11 @@ class Plot:
 
         fig = go.Figure(
             data=[
-                go.Bar(name='Occupation', x=df[period], y=df['utilization'], yaxis='y', offsetgroup=2,
-                       marker={'color': 'skyblue'}, text=df['utilization']),
-
-                go.Scatter(name='Charging Capacity', x=df[period], y=df['charging_capacity'], yaxis='y2', marker={'color': 'gold'},
-                       text=df['charging_capacity'])
+                go.Bar(name='Charging Capacity', x=df[period], y=df['charging_capacity'], yaxis='y',
+                       marker={'color': 'lightblue'}, text=df['charging_capacity']),
+                go.Scatter(name='Utilization', x=df[period], y=df['utilization'], yaxis='y2', line_shape='spline',
+                           mode='lines+markers',
+                           marker={'color': 'cornflowerblue'}, text=df['utilization'])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
@@ -107,3 +107,4 @@ class Plot:
             fig.update_layout(xaxis={"dtick": 1})
         fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
         fig.show()
+
