@@ -9,9 +9,10 @@ class base:
     def variable_avg_stat(self, df, *args):
         df_grouped = df.groupby(['station_name', 'charger_code', 'date', *args])
         df1 = df_grouped[['charging_time', 'charging_capacity']].apply(sum).reset_index()
+        df1['charging_cnt'] = df_grouped.size().reset_index(name='cnt')['cnt']
         df1['utilization'] = round(df1['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
-        df2 = round(df1.groupby([*args]).mean().reset_index(), 2)
-        df2['charging_time'] = round(df2['charging_time'] / 60, 2)
+        df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
+        df2['charging_time'] = round(df2['charging_time'] / 60, 0)
         return df2
 
     def num_users(self, df, col): # 회원번호, 비회원번호 count하여 이용자 수 계산

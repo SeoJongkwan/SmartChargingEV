@@ -18,7 +18,7 @@ class Plot:
             title_period = '일'
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
-        elif period == 'isWeek':
+        elif period == 'is_week':
             title_period = '주중/주말'
         else:
             title_period = '월'
@@ -36,12 +36,14 @@ class Plot:
                 'yaxis2': {'title': 'Utilization (%)', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
+        # fig = px.line(df, x=period, y='utilization', color='charger_place', symbol="charger_place", line_shape='spline')
+
         if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 이용률 & 충전량") #yaxis_range=[0,50]
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 충전량 & 이용률") #yaxis_range=[0,50]
         elif period =='hour':
-            fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 이용률 & 충전량")
+            fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 충전량 & 이용률")
         else:
-            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 이용률 & 충전량")
+            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 충전량 & 이용률")
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 
@@ -67,9 +69,10 @@ class Plot:
         fig = go.Figure(data=[go.Table(
             header=dict(values=list(df.columns),
                         fill_color='paleturquoise',
-                        align='left'),
-            cells=dict(values=[df.charger_region, df.charging_time, df.charging_capacity, df.utilization],
+                        align='center'),
+            cells=dict(values=[df.지역, df.충전시간, df.충전량, df.충전횟수, df.이용률],
                        fill_color='lavender',
-                       align='left'))
+                       align='center'))
         ])
+        fig.update_layout(title="지역별 평균 이용 현황")
         fig.show()

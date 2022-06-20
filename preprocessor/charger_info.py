@@ -68,21 +68,15 @@ for n in range(len(ExistStations)):
         NewCharger['chargerOpTIme'] = info.charger_opTime[0]
         NewCharger['chargerTarget'] = info.charger_target[0]
 
-        MonthlyAvgStat = comp.charger_avg_stat(SelectCharger, 'month', 'date')
-        # WeekdayAvgStat = comp.charger_avg_stat(select_charger, 'weekday')
-        # DailyAvgStat = comp.charger_avg_stat(select_charger, 'date')
-        HourlyAvgStat = comp.charger_avg_stat(SelectCharger, 'date', 'hour')
-        IsweekOccpStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'date')
-        IsweekAvgStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'hour')
-        IsweekHourStat = comp.charger_avg_stat(SelectCharger, 'date', 'isWeek', 'hour')
-
-        # 이용률과 충전횟수
-        # HourlyAvgStat['charging_time'] = round(HourlyAvgStat['chargingTime'] / 60, 2)
-        # charger_chart = charger_chart.Plot(HourlyAvgStat)
-        # charger_chart.show_occupation_cap(HourlyAvgStat, 'hour', station_name)
+        MonthlyAvgStat = comp.charger_avg_stat(SelectCharger, 'month')
+        WeekdayAvgStat = comp.charger_avg_stat(SelectCharger, 'weekday')
+        # DailyAvgStat = comp.charger_avg_stat(SelectCharger, 'date')
+        HourlyAvgStat = comp.charger_avg_stat(SelectCharger, 'hour')
+        IsweekAvgStat = comp.charger_avg_stat(SelectCharger, 'isWeek')
+        IsweekHourStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'hour')
 
         #주중/주말 평균 이용률
-        WeekType = IsweekOccpStat.groupby(['isWeek']).mean().reset_index()
+        WeekType = IsweekAvgStat
         if len(WeekType) == 2:
             NewCharger['wdUtilization'] = round(WeekType.iloc[0]['utilization'], 2)
             NewCharger['wkndUtilization'] = round(WeekType.iloc[1]['utilization'], 2)
@@ -98,10 +92,10 @@ for n in range(len(ExistStations)):
 
         #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
         criteria = 5
-        WeekMax = IsweekAvgStat[IsweekAvgStat['isWeek'] == 0].sort_values(by='utilization', ascending=False).head(criteria)
-        WeekMin = IsweekAvgStat[IsweekAvgStat['isWeek'] == 0].sort_values(by='utilization', ascending=True).head(criteria)
-        WeekendMax = IsweekAvgStat[IsweekAvgStat['isWeek'] == 1].sort_values(by='utilization', ascending=False).head(criteria)
-        WeekendMin = IsweekAvgStat[IsweekAvgStat['isWeek'] == 1].sort_values(by='utilization', ascending=True).head(criteria)
+        WeekMax = IsweekHourStat[IsweekHourStat['isWeek'] == 0].sort_values(by='utilization', ascending=False).head(criteria)
+        WeekMin = IsweekHourStat[IsweekHourStat['isWeek'] == 0].sort_values(by='utilization', ascending=True).head(criteria)
+        WeekendMax = IsweekHourStat[IsweekHourStat['isWeek'] == 1].sort_values(by='utilization', ascending=False).head(criteria)
+        WeekendMin = IsweekHourStat[IsweekHourStat['isWeek'] == 1].sort_values(by='utilization', ascending=True).head(criteria)
 
         NewCharger['wdMaxHour'] = str(WeekMax['hour'].values)
         NewCharger['wdMinHour'] = str(WeekMin['hour'].values)
