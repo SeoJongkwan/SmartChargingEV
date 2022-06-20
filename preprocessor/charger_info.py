@@ -48,7 +48,6 @@ print(f'New Stations corresponding DB: {len(ExistStations)}')
 ChargerCheck = []                                                           #신규츙전소 저장 리스트
 # n = 2
 for n in range(len(ExistStations)):
-# for n in range(20, 30):
     StationName = ExistStations.iloc[n, 1]
     ChargerId = ExistStations.iloc[n, 2]
     print(f"{n} station: {StationName} / charger id: {ChargerId}")
@@ -75,6 +74,12 @@ for n in range(len(ExistStations)):
         IsweekAvgStat = comp.charger_avg_stat(SelectCharger, 'isWeek')
         IsweekHourStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'hour')
 
+        # 일 평균 이용률
+        NewCharger['utilization'] = round(IsweekAvgStat['utilization'].mean(), 1)
+        # 요일 평균 이용률
+        for n in range(len(WeekdayAvgStat['weekday'])):
+            NewCharger[str(n) + '_utilization'] = WeekdayAvgStat['utilization'][n]
+
         #주중/주말 평균 이용률
         WeekType = IsweekAvgStat
         if len(WeekType) == 2:
@@ -88,7 +93,6 @@ for n in range(len(ExistStations)):
             NewCharger['wkndUtilization'] = round(WeekType.iloc[0]['utilization'], 2)
         else:
             print("No weekType")
-
 
         #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
         criteria = 5
@@ -118,6 +122,7 @@ for n in range(len(ExistStations)):
 
 stations = pd.concat(ChargerCheck)
 # 충전기 이용률 그룹화
-stations.insert(9, 'wdrank', comp.utilization_group(stations['wdUtilization']))
-stations.insert(11, 'wkndrank', comp.utilization_group(stations['wkndUtilization']))
+stations.insert(9, 'rank', comp.utilization_group(stations['utilization']))
+stations.insert(18, 'wdrank', comp.utilization_group(stations['wdUtilization']))
+stations.insert(20, 'wkndrank', comp.utilization_group(stations['wkndUtilization']))
 stations.to_csv(DocPath + ChargerList, index=False, encoding='utf-8')
