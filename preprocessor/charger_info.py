@@ -40,7 +40,7 @@ charger['isWeek'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
 
 # 신규 충전소 목록
 NewStations = charger.drop_duplicates(['station_name', 'charger_code'], keep='first')
-NewStations = NewStations[['station_name', 'charger_code']].sort_values(by=['station_name']).reset_index(drop=True)
+NewStations = NewStations[['station_name', 'charger_code']].sort_values(by=['station_name', 'charger_code']).reset_index(drop=True)
 
 ExistStations = RegStations[RegStations['station_name'].isin(NewStations['station_name'])].reset_index(drop=True)
 print(f'New Stations corresponding DB: {len(ExistStations)}')
@@ -120,7 +120,7 @@ for n in range(len(ExistStations)):
         print("New charger is registered\n")
 
 
-stations = pd.concat(ChargerCheck)
+stations = pd.concat(ChargerCheck).sort_values(by=['station_name', 'charger_id'])
 # 충전기 이용률 그룹화
 stations.insert(9, 'rank', comp.utilization_group(stations['utilization']))
 stations.insert(18, 'wdrank', comp.utilization_group(stations['wdUtilization']))

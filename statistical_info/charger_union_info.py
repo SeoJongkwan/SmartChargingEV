@@ -7,6 +7,8 @@ from extractor import mt
 from statistical_info import statistical_func, statistical_chart
 import exception
 
+pd.set_option('mode.chained_assignment',  None)
+
 doc_path = '../doc/'
 charger_file = 'charger_list.csv'
 # 추후, DB데이터 불러올 때 사용
@@ -60,7 +62,8 @@ history_station = charger_history.drop_duplicates(['station_name', 'charger_code
 history_station = history_station[['station_name', 'charger_code']].sort_values(by=['station_name']).reset_index(drop=True)
 
 # 사용내역과 통계정보에 속한 충전기
-exist_stations = dc_chargers[dc_chargers['station_name'].isin(history_station['station_name'])].reset_index(drop=True)
+exist_stations = dc_chargers[dc_chargers['station_name'].isin(history_station['station_name'])].reset_index(drop=True).sort_values(by=['station_name', 'charger_id'])
+exist_stations['num_users'] = 0
 print(f'New Stations corresponding DB: {len(exist_stations)}')
 
 info_usage = []  # 통계정보 저장 리스트                                                          # 통계 통합정보 저장 리스트
@@ -75,6 +78,10 @@ for n in range(len(exist_stations)):
     if usage_station.empty:
         print("There are Station but, no Charger ID\n")
     else:
+        # 충전기 목록에 기간내 비중복 이용자 수 추가
+        stat_func = statistical_func.base(history_station)
+        exist_stations['num_users'].iloc[n] = stat_func.num_users(usage_station)['user_cnt'].iloc[0].item()
+
         usage_station['charger_region'] = info_station['address'].str.split().str[0].item()
         usage_station['charger_place'] =  info_station['chargerPlace'].item()
         usage_station['wd_rank'] = info_station['wdrank'].item()
@@ -103,7 +110,7 @@ region = regional_stat.drop(columns='charger_code')
 region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간', 'charging_capacity':'충전량', 'charging_cnt':'충전횟수','utilization':'이용률'}, inplace=True)
 # stat_chart.show_region_info(region)
 
-# 이용률그룹 충전량과 이용자 수
+# 이용률그룹별 충전량과 이용자 수
 select_week = info.week_type[0][0]
 select_col = 'wd_rank' if select_week == 0 else 'wknd_rank'
 select_rank = 6
@@ -112,10 +119,11 @@ week_df = union_station[(union_station['is_week'] == select_week) & (union_stati
 if len(week_df) == 0:
     raise exception.FileExistException
 
-util_stat = stat_func.variable_avg_stat(week_df, 'month')
-num_users = stat_func.num_users(week_df, select_col)
-merge_util = pd.merge(util_stat, num_users, on=['month'], how='inner')
-title = info.week_type[select_week][1] + ' ' + str(select_rank)
+# 충전량 & 이용자 수 차트
+# util_stat = stat_func.variable_avg_stat(week_df, 'month')
+# num_users = stat_func.num_users(week_df, select_col)
+# merge_util = pd.merge(util_stat, num_users, on=['month'], how='inner')
+# title = info.week_type[select_week][1] + ' ' + str(select_rank)
 # stat_chart.show_rank_info(merge_util, title)
 
 # 전체 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말)
@@ -127,10 +135,12 @@ title = info.week_type[select_week][1] + ' ' + str(select_rank)
 # stat_chart.show_util_cap(monthly_avg_stat, 'month', charger_name)
 
 # 개별 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말, 주중/주말 시간대)
-n=19# 충전소 선택
+n=19 # 충전소 선택
 station_name = exist_stations.iloc[n, 1]
 charger_id = int(exist_stations.iloc[n, 2])
 select_charger = union_station[(union_station['station_name'] == station_name) & (union_station['charger_code'] == charger_id)].reset_index(drop=True)
+
+num_users = stat_func.num_users(select_charger)
 
 monthly_avg_stat = stat_func.variable_avg_stat(select_charger, 'month')
 weekday_avg_stat = stat_func.variable_avg_stat(select_charger, 'weekday')
