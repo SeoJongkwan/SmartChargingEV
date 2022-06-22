@@ -26,7 +26,25 @@ class base:
         df1 = df_grouped[['chargingTime', 'charging_capacity']].apply(sum).reset_index()
         df1['utilization'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
+
+        if 'weekday' in args and 'hour' in args:
+            df2 = self.set_weekday_hour(df2)
         return df2
+
+    def set_weekday_hour(self, df):
+        # 없는 시간대는 기본값 0
+        weekday_list = list(range(0, 7))
+        hour_list = list(range(0, 24))
+
+        dfs = []
+        for n in range(len(weekday_list)):
+            df_wh = pd.DataFrame(hour_list, columns=['hour'])
+            df_wh['weekday'] = n
+            dfs.append(df_wh)
+
+        df_sort = pd.concat(dfs).sort_values(by=['weekday']).reset_index(drop='index')
+        df1 = pd.merge(df, df_sort, on=['weekday', 'hour'], how='outer').fillna(0).sort_values(by=['weekday', 'hour']).reset_index(drop='index')
+        return df1
 
     def timezone_condition(self, x):
         if x < 6:
