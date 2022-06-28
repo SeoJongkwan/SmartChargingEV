@@ -26,7 +26,7 @@ FilterColumn = ["charging_id", "station_name", "charger_code", "start_time", "en
 FilterCharger = UsageHistory[FilterColumn].reset_index(drop=True)
 
 StartDate = date(2022, 1, 1)                                                #2022년 기간설정
-ChargerHistory = mt.select_time(FilterCharger, 'start_time', StartDate, 4)
+ChargerHistory = mt.select_time(FilterCharger, 'start_time', StartDate, 3)
 charger = ChargerHistory[ChargerHistory['charging_capacity'] > 0]           # 충전량 > 0
 charger = charger.dropna(subset=['start_time', 'end_time'])
 print(f'Registered Usage History: {len(UsageHistory)} (Capacity>0): {len(charger)}')
@@ -48,7 +48,6 @@ print(f'New Stations corresponding DB: {len(ExistStations)}')
 ChargerCheck = []                                                           #신규츙전소 저장 리스트
 # n = 2
 for n in range(len(ExistStations)):
-# for n in range(7, 10):
     StationName = ExistStations.iloc[n, 1]
     ChargerId = ExistStations.iloc[n, 2]
     print(f"{n} station: {StationName} / charger id: {ChargerId}")
@@ -128,6 +127,12 @@ for n in range(len(ExistStations)):
         NewCharger['sunMaxHour'] = str(SunMax['hour'].values)
         NewCharger['sunMinHour'] = str(SunMin['hour'].values)
 
+        # 새벽, 오전, 오후, 밤 시간대 이용률
+        NewCharger['dawnUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[0])
+        NewCharger['amUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[1])
+        NewCharger['pmUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[2])
+        NewCharger['nightUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[3])
+
         # #주중/주말 평균 이용률
         # WeekType = IsweekAvgStat
         # if len(WeekType) == 2:
@@ -171,6 +176,7 @@ for n in range(len(ExistStations)):
 stations = pd.concat(ChargerCheck).sort_values(by=['station_name', 'charger_id'])
 # 충전기 이용률 그룹화
 stations.insert(9, 'rank', comp.utilization_group(stations['utilization']))
+stations.insert(10, 'wedRank', comp.utilization_group(stations['wedUtilization']))
 # stations.insert(18, 'wdrank', comp.utilization_group(stations['wdUtilization']))
 # stations.insert(20, 'wkndrank', comp.utilization_group(stations['wkndUtilization']))
 stations.to_csv(DocPath + ChargerList, index=False, encoding='utf-8')

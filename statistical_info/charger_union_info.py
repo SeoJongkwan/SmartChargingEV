@@ -41,7 +41,7 @@ history_list = history_list[filter_col].reset_index(drop=True)
 
 # 전처리 항목(2022년, 충전용량 0 초과, 충전 시작/종료 시간 null 체크)
 start_date = date(2022, 1, 1)
-charger_history = mt.select_time(history_list, 'start_time', start_date, 4)
+charger_history = mt.select_time(history_list, 'start_time', start_date, 3)
 charger_history = charger_history[charger_history['charging_capacity'] > 0]           # 충전량 > 0
 charger_history = charger_history.dropna(subset=['start_time', 'end_time'])
 
@@ -84,8 +84,8 @@ for n in range(len(exist_stations)):
 
         usage_station['charger_region'] = info_station['address'].str.split().str[0].item()
         usage_station['charger_place'] =  info_station['chargerPlace'].item()
-        usage_station['wd_rank'] = info_station['wdrank'].item()
-        usage_station['wknd_rank'] = info_station['wkndrank'].item()
+        # usage_station['wd_rank'] = info_station['wdrank'].item()
+        # usage_station['wknd_rank'] = info_station['wkndrank'].item()
 
         info_usage.append(usage_station)
         print("Charger info merged.\n")
@@ -111,13 +111,13 @@ region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간'
 # stat_chart.show_region_info(region)
 
 # 이용률그룹별 충전량과 이용자 수
-select_week = info.week_type[0][0]
-select_col = 'wd_rank' if select_week == 0 else 'wknd_rank'
-select_rank = 6
-week_df = union_station[(union_station['is_week'] == select_week) & (union_station[select_col] == select_rank)]
-
-if len(week_df) == 0:
-    raise exception.FileExistException
+# select_week = info.week_type[0][0]
+# select_col = 'wd_rank' if select_week == 0 else 'wknd_rank'
+# select_rank = 6
+# week_df = union_station[(union_station['is_week'] == select_week) & (union_station[select_col] == select_rank)]
+#
+# if len(week_df) == 0:
+#     raise exception.FileExistException
 
 # 충전량 & 이용자 수 차트
 # util_stat = stat_func.variable_avg_stat(week_df, 'month')
@@ -127,7 +127,7 @@ if len(week_df) == 0:
 # stat_chart.show_rank_info(merge_util, title)
 
 # 전체 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말)
-# monthly_avg_stat = stat_func.variable_avg_stat(union_station, 'month')
+# monthly_avg_stat = stat_func.variable_avg_stㅁat(union_station, 'month')
 # weekday_avg_stat = stat_func.variable_avg_stat(union_station, 'weekday')
 # hourly_avg_stat =  stat_func.variable_avg_stat(union_station, 'hour')
 # isweek_avg_stat = stat_func.variable_avg_stat(union_station, 'is_week')
@@ -135,7 +135,7 @@ if len(week_df) == 0:
 # stat_chart.show_util_cap(monthly_avg_stat, 'month', charger_name)
 
 # 개별 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말, 주중/주말 시간대)
-n=19 # 충전소 선택
+n=2 # 충전소 선택
 station_name = exist_stations.iloc[n, 1]
 charger_id = int(exist_stations.iloc[n, 2])
 select_charger = union_station[(union_station['station_name'] == station_name) & (union_station['charger_code'] == charger_id)].reset_index(drop=True)

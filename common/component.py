@@ -46,6 +46,24 @@ class base:
         df1 = pd.merge(df, df_sort, on=['weekday', 'hour'], how='outer').fillna(0).sort_values(by=['weekday', 'hour']).reset_index(drop='index')
         return df1
 
+    def tz_util(self, df, weekday, timezone):
+        # 선택 요일, 선택 타임존 이용률
+        df1 = df[df['weekday'] == weekday]
+        if timezone == info.dc_tz[0]:
+            start_hour = 0
+            end_hour = 6
+        elif timezone == info.dc_tz[1]:
+            start_hour = 6
+            end_hour = 13
+        elif timezone == info.dc_tz[2]:
+            start_hour = 13
+            end_hour = 18
+        else:
+            start_hour = 18
+            end_hour = 24
+        tz_util = df1[(df1['hour'] >= start_hour) & (df1['hour'] < end_hour)]['utilization'].sum()
+        return tz_util
+
     def timezone_condition(self, x):
         if x < 6:
             return info.dc_tz[0]
