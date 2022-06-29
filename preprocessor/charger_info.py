@@ -37,6 +37,7 @@ charger = comp.time_split('start_time')
 charger['chargingTime'] = (charger['end_time'] - charger['start_time']).dt.total_seconds()
 charger = charger.astype({'chargingTime': int})
 charger['isWeek'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
+charger['memberType'] = np.where(charger['member_name'] != '비회원', '회원', np.where(charger['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원')) # 회원유형 구분
 
 # 신규 충전소 목록
 NewStations = charger.drop_duplicates(['station_name', 'charger_code'], keep='first')
@@ -77,93 +78,26 @@ for n in range(len(ExistStations)):
 
         # 일 평균 이용률
         NewCharger['utilization'] = round(IsweekAvgStat['utilization'].mean(), 1)
-        # 요일 평균 이용률
+        # 요일 평균 이용률, 요일별 새벽/오전/오후/밤 시간대 이용률
         for n in range(len(WeekdayAvgStat['weekday'])):
-            # NewCharger[str(n) + '_utilization'] = WeekdayAvgStat['utilization'][n]
-            if n == 0:
-                NewCharger['monUtilization'] = WeekdayAvgStat['utilization'][n]
-            elif n == 1:
-                NewCharger['tueUtilization'] = WeekdayAvgStat['utilization'][n]
-            elif n == 2:
-                NewCharger['wedUtilization'] = WeekdayAvgStat['utilization'][n]
-            elif n == 3:
-                NewCharger['thuUtilization'] = WeekdayAvgStat['utilization'][n]
-            elif n == 4:
-                NewCharger['friUtilization'] = WeekdayAvgStat['utilization'][n]
-            elif n == 5:
-                NewCharger['satUtilization'] = WeekdayAvgStat['utilization'][n]
-            else:
-                NewCharger['sunUtilization'] = WeekdayAvgStat['utilization'][n]
+            NewCharger[info.weekday[n][1] + 'Utilization'] = WeekdayAvgStat['utilization'][n]
+            NewCharger[info.weekday[n][1] + 'DawnUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[0])
+            NewCharger[info.weekday[n][1] + 'AmUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[1])
+            NewCharger[info.weekday[n][1] + 'PmUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[2])
+            NewCharger[info.weekday[n][1] + 'NightUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[3])
 
-        # 요일별 최대, 최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
-        criteria = 5
-        MonMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 0].sort_values(by='utilization', ascending=False).head(criteria)
-        MonMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 0].sort_values(by='utilization', ascending=True).head(criteria)
-        TueMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 1].sort_values(by='utilization', ascending=False).head(criteria)
-        TueMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 1].sort_values(by='utilization', ascending=True).head(criteria)
-        WedMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 2].sort_values(by='utilization', ascending=False).head(criteria)
-        WedMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 2].sort_values(by='utilization', ascending=True).head(criteria)
-        ThuMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 3].sort_values(by='utilization', ascending=False).head(criteria)
-        ThuMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 3].sort_values(by='utilization', ascending=True).head(criteria)
-        FriMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 4].sort_values(by='utilization', ascending=False).head(criteria)
-        FriMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 4].sort_values(by='utilization', ascending=True).head(criteria)
-        SatMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 5].sort_values(by='utilization', ascending=False).head(criteria)
-        SatMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 5].sort_values(by='utilization', ascending=True).head(criteria)
-        SunMax = WeekdayHourStat[WeekdayHourStat['weekday'] == 6].sort_values(by='utilization', ascending=False).head(criteria)
-        SunMin = WeekdayHourStat[WeekdayHourStat['weekday'] == 6].sort_values(by='utilization', ascending=True).head(criteria)
-
-        NewCharger['monMaxHour'] = str(MonMax['hour'].values)
-        NewCharger['monMinHour'] = str(MonMin['hour'].values)
-        NewCharger['tueMaxHour'] = str(TueMax['hour'].values)
-        NewCharger['tueMinHour'] = str(TueMin['hour'].values)
-        NewCharger['wedMaxHour'] = str(WedMax['hour'].values)
-        NewCharger['wedMinHour'] = str(WedMin['hour'].values)
-        NewCharger['thuMaxHour'] = str(ThuMax['hour'].values)
-        NewCharger['thuMinHour'] = str(ThuMin['hour'].values)
-        NewCharger['friMaxHour'] = str(FriMax['hour'].values)
-        NewCharger['friMinHour'] = str(FriMin['hour'].values)
-        NewCharger['satMaxHour'] = str(SatMax['hour'].values)
-        NewCharger['satMinHour'] = str(SatMin['hour'].values)
-        NewCharger['sunMaxHour'] = str(SunMax['hour'].values)
-        NewCharger['sunMinHour'] = str(SunMin['hour'].values)
-
-        # 새벽, 오전, 오후, 밤 시간대 이용률
-        NewCharger['dawnUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[0])
-        NewCharger['amUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[1])
-        NewCharger['pmUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[2])
-        NewCharger['nightUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[2][0], info.dc_tz[3])
-
-        # #주중/주말 평균 이용률
-        # WeekType = IsweekAvgStat
-        # if len(WeekType) == 2:
-        #     NewCharger['wdUtilization'] = round(WeekType.iloc[0]['utilization'], 2)
-        #     NewCharger['wkndUtilization'] = round(WeekType.iloc[1]['utilization'], 2)
-        # elif len(WeekType) == 1 and WeekType.iloc[0]['isWeek'] == 0:
-        #     NewCharger['wdUtilization'] = round(WeekType.iloc[0]['utilization'], 2)
-        #     NewCharger['wkndUtilization'] = 0
-        # elif len(WeekType) == 1 and WeekType.iloc[0]['isWeek'] == 1:
-        #     NewCharger['wdUtilization'] = 0
-        #     NewCharger['wkndUtilization'] = round(WeekType.iloc[0]['utilization'], 2)
-        # else:
-        #     print("No weekType")
-        #
-        # #주중/주말 최대,최소 충전시간(criteria 변수를 통해 시간대 개수 정의)
-        # criteria = 5
-        # WeekMax = IsweekHourStat[IsweekHourStat['isWeek'] == 0].sort_values(by='utilization', ascending=False).head(criteria)
-        # WeekMin = IsweekHourStat[IsweekHourStat['isWeek'] == 0].sort_values(by='utilization', ascending=True).head(criteria)
-        # WeekendMax = IsweekHourStat[IsweekHourStat['isWeek'] == 1].sort_values(by='utilization', ascending=False).head(criteria)
-        # WeekendMin = IsweekHourStat[IsweekHourStat['isWeek'] == 1].sort_values(by='utilization', ascending=True).head(criteria)
-        #
-        # NewCharger['wdMaxHour'] = str(WeekMax['hour'].values)
-        # NewCharger['wdMinHour'] = str(WeekMin['hour'].values)
-        # NewCharger['wkndMaxHour'] = str(WeekendMax['hour'].values)
-        # NewCharger['wkndMinHour'] = str(WeekendMin['hour'].values)
-        #
-        # #주중/주말 최대,최소 충전시간대
-        # NewCharger['wdMaxTz'] = comp.timezone_classification(WeekMax, 'max')
-        # NewCharger['wdMinTz'] = comp.timezone_classification(WeekMin, 'min')
-        # NewCharger['wkndMaxTz'] = comp.timezone_classification(WeekendMax, 'max')
-        # NewCharger['wkndMinTz'] = comp.timezone_classification(WeekendMin, 'min')
+        # 연관항목 - 거리 default
+        NewCharger['distance'] = info.distance[0][0]
+        # 연관항목 - 충전기 밀집도
+        NewCharger['chargerDensity'] = info.charger_density[0][0]
+        # 연관항목 - 접근성
+        NewCharger['accessibility'] = info.accessibility[0][0]
+        # 연관항목 - 평균 이용자 수
+        NewCharger['avgNumUsers'] = comp.num_users(SelectCharger, 'station_name', 'charger_code')['user_cnt'].iloc[0].item()
+        # 연관항목 - 주차요금
+        NewCharger['chargingFee'] = info.charging_fee[0][0]
+        # 연관항목 - 충전 불가 횟수
+        NewCharger['unableCharge'] = info.unable_charge[0][0]
 
         #평균 통계값
         NewCharger['avgChargeTime'] = round(SelectCharger['chargingTime'].mean() / 60, 2)
@@ -172,11 +106,8 @@ for n in range(len(ExistStations)):
         ChargerCheck.append(NewCharger)                                                 #신규 충전기 추가
         print("New charger is registered\n")
 
-
 stations = pd.concat(ChargerCheck).sort_values(by=['station_name', 'charger_id'])
-# 충전기 이용률 그룹화
-stations.insert(9, 'rank', comp.utilization_group(stations['utilization']))
-stations.insert(10, 'wedRank', comp.utilization_group(stations['wedUtilization']))
-# stations.insert(18, 'wdrank', comp.utilization_group(stations['wdUtilization']))
-# stations.insert(20, 'wkndrank', comp.utilization_group(stations['wkndUtilization']))
+# 충전기 요일 이용률 그룹 추가
+for n in range(0, 7):
+    stations.insert(n+9, info.weekday[n][1]+'Rank', comp.utilization_group(stations[info.weekday[n][1] + 'Utilization']))
 stations.to_csv(DocPath + ChargerList, index=False, encoding='utf-8')

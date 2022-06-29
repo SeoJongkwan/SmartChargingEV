@@ -61,7 +61,7 @@ class base:
         else:
             start_hour = 18
             end_hour = 24
-        tz_util = df1[(df1['hour'] >= start_hour) & (df1['hour'] < end_hour)]['utilization'].sum()
+        tz_util = round(df1[(df1['hour'] >= start_hour) & (df1['hour'] < end_hour)]['utilization'].sum(), 1)
         return tz_util
 
     def timezone_condition(self, x):
@@ -94,9 +94,7 @@ class base:
         self.check_util_outlier(data)
         util_division = []
         for n in data:
-            if n <= 1.0:
-                util_division.append(1)
-            elif (n > 1.1) and (n <= 2.8):
+            if (n > 1.0) and (n <= 2.8):
                 util_division.append(2)
             elif (n > 2.8) and (n <= 4.2):
                 util_division.append(3)
@@ -104,7 +102,18 @@ class base:
                 util_division.append(4)
             elif (n > 5.6) and ((n <= 6.9) | (n <= np.round(np.mean(data), 2))):
                 util_division.append(5)
-            else:
+            elif n > 6.9:
                 util_division.append(6)
+            else:
+                util_division.append(1)
         return util_division
+
+    def num_users(self, df, *args): # 회원번호, 비회원번호 count하여 이용자 수 계산
+        df1_group = df.groupby(['member_number', *args]).size().reset_index(name='cnt')
+        df1 = df1_group.groupby([*args])['member_number'].count().reset_index(name='mem_cnt')
+        df2_group = df.groupby(['nonmember_number', *args]).size().reset_index(name='cnt')
+        df2 = df2_group.groupby([*args])['nonmember_number'].count().reset_index(name='nonmem_cnt')
+        df3 = pd.merge(df1, df2, on=[*args], how='outer').fillna(0)
+        df3['user_cnt'] = df3['mem_cnt'] + df3['nonmem_cnt']
+        return df3
 
