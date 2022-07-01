@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from datetime import date
-import os
 from common import component, info
 from extractor import mt
 from chart import charger as charger_chart
@@ -34,9 +33,9 @@ print(f'Registered Usage History: {len(UsageHistory)} (Capacity>0): {len(charger
 # 충전시간(seconds), 주중/주말 구분
 comp = component.base(charger)
 charger = comp.time_split('start_time')
-charger['chargingTime'] = (charger['end_time'] - charger['start_time']).dt.total_seconds()
-charger = charger.astype({'chargingTime': int})
-charger['isWeek'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
+charger['charging_time'] = (charger['end_time'] - charger['start_time']).dt.total_seconds()
+charger = charger.astype({'charging_time': int})
+charger['is_week'] = charger['weekday'].apply(lambda x: 1 if x > 4 else 0)
 charger['memberType'] = np.where(charger['member_name'] != '비회원', '회원', np.where(charger['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원')) # 회원유형 구분
 
 # 신규 충전소 목록
@@ -64,50 +63,12 @@ for n in range(len(ExistStations)):
         NewCharger = ExistStations.where((ExistStations['station_name'] == StationName) & (ExistStations['charger_id'] == ChargerId)).dropna()
         NewCharger = NewCharger.astype({'charger_id': int})
         NewCharger['chargerType'] = info.charger_type[1]
-        NewCharger['chargerPlace'] = info.charger_place[0]
-        NewCharger['chargerOpTIme'] = info.charger_opTime[0]
-        NewCharger['chargerTarget'] = info.charger_target[0]
-
-        MonthlyAvgStat = comp.charger_avg_stat(SelectCharger, 'month')
-        WeekdayAvgStat = comp.charger_avg_stat(SelectCharger, 'weekday')
-        WeekdayHourStat = comp.charger_avg_stat(SelectCharger, 'weekday', 'hour')
-        # DailyAvgStat = comp.charger_avg_stat(SelectCharger, 'date')
-        HourlyAvgStat = comp.charger_avg_stat(SelectCharger, 'hour')
-        IsweekAvgStat = comp.charger_avg_stat(SelectCharger, 'isWeek')
-        IsweekHourStat = comp.charger_avg_stat(SelectCharger, 'isWeek', 'hour')
-
-        # 일 평균 이용률
-        NewCharger['utilization'] = round(IsweekAvgStat['utilization'].mean(), 1)
-        # 요일 평균 이용률, 요일별 새벽/오전/오후/밤 시간대 이용률
-        for n in range(len(WeekdayAvgStat['weekday'])):
-            NewCharger[info.weekday[n][1] + 'Utilization'] = WeekdayAvgStat['utilization'][n]
-            NewCharger[info.weekday[n][1] + 'DawnUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[0])
-            NewCharger[info.weekday[n][1] + 'AmUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[1])
-            NewCharger[info.weekday[n][1] + 'PmUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[2])
-            NewCharger[info.weekday[n][1] + 'NightUtilization'] = comp.tz_util(WeekdayHourStat, info.weekday[n][0], info.dc_tz[3])
-
-        # 연관항목 - 거리 default
-        NewCharger['distance'] = info.distance[0][0]
-        # 연관항목 - 충전기 밀집도
-        NewCharger['chargerDensity'] = info.charger_density[0][0]
-        # 연관항목 - 접근성
-        NewCharger['accessibility'] = info.accessibility[0][0]
-        # 연관항목 - 평균 이용자 수
-        NewCharger['avgNumUsers'] = comp.num_users(SelectCharger, 'station_name', 'charger_code')['user_cnt'].iloc[0].item()
-        # 연관항목 - 주차요금
-        NewCharger['chargingFee'] = info.charging_fee[0][0]
-        # 연관항목 - 충전 불가 횟수
-        NewCharger['unableCharge'] = info.unable_charge[0][0]
-
-        #평균 통계값
-        NewCharger['avgChargeTime'] = round(SelectCharger['chargingTime'].mean() / 60, 2)
-        NewCharger['avgChargeCap'] = round(SelectCharger['charging_capacity'].mean(), 2)
 
         ChargerCheck.append(NewCharger)                                                 #신규 충전기 추가
         print("New charger is registered\n")
 
 stations = pd.concat(ChargerCheck).sort_values(by=['station_name', 'charger_id'])
 # 충전기 요일 이용률 그룹 추가
-for n in range(0, 7):
-    stations.insert(n+9, info.weekday[n][1]+'Rank', comp.utilization_group(stations[info.weekday[n][1] + 'Utilization']))
+# for n in range(0, 7):
+#     stations.insert(n+9, info.weekday[n][1]+'Rank', comp.utilization_group(stations[info.weekday[n][1] + 'Utilization']))
 stations.to_csv(DocPath + ChargerList, index=False, encoding='utf-8')

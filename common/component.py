@@ -19,12 +19,20 @@ class base:
         self.df['day_of_week'] = self.df[column].dt.day_name()
         self.df['hour'] = self.df[column].dt.hour
         self.df['minute'] = self.df[column].dt.minute
+        self.df['is_week'] =  self.df['weekday'].apply(lambda x: 1 if x > 4 else 0)
+        return self.df
+
+    def add_columns(self):
+        self.time_split('start_time')
+        self.df['charging_time'] = (self.df['end_time'] - self.df['start_time']).dt.total_seconds()
+        self.df = self.df.astype({'charging_time': int})
+        self.df['member_type'] = np.where(self.df['member_name'] != '비회원', '회원',np.where(self.df['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원'))  # 회원유형 구분
         return self.df
 
     def charger_avg_stat(self, df, *args):
         df_grouped = df.groupby([*args, 'date'])
-        df1 = df_grouped[['chargingTime', 'charging_capacity']].apply(sum).reset_index()
-        df1['utilization'] = round(df1['chargingTime'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
+        df1 = df_grouped[['charging_time', 'charging_capacity']].apply(sum).reset_index()
+        df1['utilization'] = round(df1['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
 
         if 'weekday' in args and 'hour' in args:
@@ -91,8 +99,13 @@ class base:
         plt.show()
 
     def utilization_group(self, data):
-        self.check_util_outlier(data)
+        # self.check_util_outlier(data)
         util_division = []
+        arr_data = []
+        if not isinstance(data, list):
+            arr_data.append(data)
+            data = arr_data
+
         for n in data:
             if (n > 1.0) and (n <= 2.8):
                 util_division.append(2)

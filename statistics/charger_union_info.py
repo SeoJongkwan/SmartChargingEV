@@ -4,9 +4,8 @@ import os
 from datetime import date
 from common import info, component
 from extractor import mt
-from statistical_info import statistical_func, statistical_chart
+from statistics import statistics_func, statistics_chart
 import exception
-
 pd.set_option('mode.chained_assignment',  None)
 
 doc_path = '../doc/'
@@ -79,13 +78,13 @@ for n in range(len(exist_stations)):
         print("There are Station but, no Charger ID\n")
     else:
         # 충전기 목록에 기간내 비중복 이용자 수 추가
-        stat_func = statistical_func.base(history_station)
+        stat_func = statistics_func.base(history_station)
         exist_stations['num_users'].iloc[n] = stat_func.num_users(usage_station)['user_cnt'].iloc[0].item()
 
         usage_station['charger_region'] = info_station['address'].str.split().str[0].item()
         usage_station['charger_place'] =  info_station['chargerPlace'].item()
-        # usage_station['wd_rank'] = info_station['wdrank'].item()
-        # usage_station['wknd_rank'] = info_station['wkndrank'].item()
+        # select_station['wd_rank'] = info_station['wdrank'].item()
+        # select_station['wknd_rank'] = info_station['wkndrank'].item()
 
         info_usage.append(usage_station)
         print("Charger info merged.\n")
@@ -95,12 +94,12 @@ union_station = pd.concat(info_usage)
 union_station.to_csv(doc_path + union_file)
 
 # 지역, 장소, 이용률그룹별 grouping
-stat_func = statistical_func.base(union_station)
+stat_func = statistics_func.base(union_station)
 regional_stat = stat_func.variable_avg_stat(union_station, 'charger_region').sort_values(by='utilization', ascending=False)
 place_stat = stat_func.variable_avg_stat(union_station, 'charger_place', 'hour')
 
 # 장소 시간대별 이용률
-stat_chart = statistical_chart.Plot(place_stat)
+stat_chart = statistics_chart.Plot(place_stat)
 select_place = info.charger_place[5]
 place = place_stat[place_stat['charger_place']==select_place]
 # stat_chart.show_util_cap(place, 'hour', select_place)
@@ -135,7 +134,7 @@ region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간'
 # stat_chart.show_util_cap(monthly_avg_stat, 'month', charger_name)
 
 # 개별 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말, 주중/주말 시간대)
-n=2 # 충전소 선택
+n=12 # 충전소 선택
 station_name = exist_stations.iloc[n, 1]
 charger_id = int(exist_stations.iloc[n, 2])
 select_charger = union_station[(union_station['station_name'] == station_name) & (union_station['charger_code'] == charger_id)].reset_index(drop=True)

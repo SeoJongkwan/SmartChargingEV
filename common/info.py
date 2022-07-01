@@ -17,7 +17,7 @@ station_info = [
 charger_place = {0:"직장", 1:"상업시설", 2:"편의시설", 3:"지식산업센터", 4:"주차시설", 5:"기타시설"}
 charger_type = {0:"완속", 1:"급속"}
 charger_target = {0:"all", 1:"입주민"}
-charger_opTime = {0:24, 1:[9,18]}
+charger_optime = {0:24, 1:[9,18]}
 charger_region = {0:"서울", 1:"경기", 2:"인천"}
 member_type = {0:"회원", 1:"로밍회원", 2:"비회원"}
 dc_tz = {0:"새벽", 1:"오전", 2:"오후", 3:"밤"}
@@ -42,6 +42,11 @@ accessibility = [
     (6, '편의시설'),
     (4, '직장'),
     (2, '기타시설')
+]
+
+avg_num_users = [
+    (5, '평균 이하'),
+    (0, '평균 이상')
 ]
 
 charging_fee = [
