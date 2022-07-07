@@ -60,9 +60,9 @@ class Plot:
             data=[
                 go.Bar(name='Charging Capacity', x=df[period], y=df['charging_capacity'], yaxis='y',
                        marker={'color': 'lightblue'}, text=df['charging_capacity']),
-                go.Scatter(name='Utilization', x=df[period], y=df['utilization'], yaxis='y2', line_shape='spline',
+                go.Scatter(name='Utilization', x=df[period], y=df['utz'], yaxis='y2', line_shape='spline',
                            mode='lines+markers',
-                           marker={'color': 'cornflowerblue'}, text=df['utilization'])
+                           marker={'color': 'cornflowerblue'}, text=df['utz'])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},

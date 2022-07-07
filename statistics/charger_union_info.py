@@ -11,8 +11,8 @@ pd.set_option('mode.chained_assignment',  None)
 doc_path = '../doc/'
 charger_file = 'charger_list.csv'
 # 추후, DB데이터 불러올 때 사용
-# history_list = mt.select_usage('charger_chargerusage') # DB의 사용내역 데이터
-# history_list = history_list[history_list['end_time'] > history_list['start_time']]
+# historyList = mt.select_usage('charger_chargerusage') # DB의 사용내역 데이터
+# historyList = historyList[historyList['end_time'] > historyList['start_time']]
 history_file = 'charger_usage_history.csv'
 union_file = 'union_station.csv'    #충전소정보 + 충전이력
 
@@ -35,8 +35,8 @@ filter_col = ["charging_id", "station_name", "charger_code", "charger_name", "st
 history_list = history_list[filter_col].reset_index(drop=True)
 
 # timezone 선택
-# history_list['start_time'] = pd.to_datetime(history_list['start_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
-# history_list['end_time'] = pd.to_datetime(history_list['end_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
+# historyList['start_time'] = pd.to_datetime(historyList['start_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
+# historyList['end_time'] = pd.to_datetime(historyList['end_time'],unit='ms', utc=True).dt.tz_convert('Asia/Seoul')
 
 # 전처리 항목(2022년, 충전용량 0 초과, 충전 시작/종료 시간 null 체크)
 start_date = date(2022, 1, 1)
@@ -83,8 +83,8 @@ for n in range(len(exist_stations)):
 
         usage_station['charger_region'] = info_station['address'].str.split().str[0].item()
         usage_station['charger_place'] =  info_station['chargerPlace'].item()
-        # select_station['wd_rank'] = info_station['wdrank'].item()
-        # select_station['wknd_rank'] = info_station['wkndrank'].item()
+        # selectStation['wd_rank'] = info_station['wdrank'].item()
+        # selectStation['wknd_rank'] = info_station['wkndrank'].item()
 
         info_usage.append(usage_station)
         print("Charger info merged.\n")
@@ -95,7 +95,7 @@ union_station.to_csv(doc_path + union_file)
 
 # 지역, 장소, 이용률그룹별 grouping
 stat_func = statistics_func.base(union_station)
-regional_stat = stat_func.variable_avg_stat(union_station, 'charger_region').sort_values(by='utilization', ascending=False)
+regional_stat = stat_func.variable_avg_stat(union_station, 'charger_region').sort_values(by='utz', ascending=False)
 place_stat = stat_func.variable_avg_stat(union_station, 'charger_place', 'hour')
 
 # 장소 시간대별 이용률
@@ -106,7 +106,7 @@ place = place_stat[place_stat['charger_place']==select_place]
 
 # 지역 충전시간, 충전량, 이용률
 region = regional_stat.drop(columns='charger_code')
-region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간', 'charging_capacity':'충전량', 'charging_cnt':'충전횟수','utilization':'이용률'}, inplace=True)
+region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간', 'charging_capacity':'충전량', 'charging_cnt':'충전횟수','utz':'이용률'}, inplace=True)
 # stat_chart.show_region_info(region)
 
 # 이용률그룹별 충전량과 이용자 수
@@ -127,9 +127,9 @@ region.rename(columns={'charger_region':'지역', 'charging_time':'충전시간'
 
 # 전체 충전소 기간별 차트 (월, 요일, 시간대, 주중/주말)
 # monthly_avg_stat = stat_func.variable_avg_stㅁat(union_station, 'month')
-# weekday_avg_stat = stat_func.variable_avg_stat(union_station, 'weekday')
+# weekdayAvgStat = stat_func.variable_avg_stat(union_station, 'weekday')
 # hourly_avg_stat =  stat_func.variable_avg_stat(union_station, 'hour')
-# isweek_avg_stat = stat_func.variable_avg_stat(union_station, 'is_week')
+# isweekAvgStat = stat_func.variable_avg_stat(union_station, 'is_week')
 # charger_name = '전체 충전기'
 # stat_chart.show_util_cap(monthly_avg_stat, 'month', charger_name)
 

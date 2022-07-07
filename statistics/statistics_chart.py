@@ -10,7 +10,7 @@ class Plot:
     def show_util_cap(self, df, period, title):
         """
         :param period: weekday, hour, month
-        :return: utilization, charging capacity => line & bar chart
+        :return: utz, charging capacity => line & bar chart
         """
         if period == 'hour':
             title_period = '시간대'
@@ -27,8 +27,8 @@ class Plot:
             data=[
                 go.Bar(name='Charging Capacity', x=df[period], y=df['charging_capacity'], yaxis='y',
                        marker={'color': 'lightblue'}, text=df['charging_capacity']),
-                go.Scatter(name='Utilization', x=df[period], y=df['utilization'], yaxis='y2', line_shape='spline', mode='lines+markers',
-                           marker={'color': 'cornflowerblue'}, text=df['utilization'])
+                go.Scatter(name='Utilization', x=df[period], y=df['utz'], yaxis='y2', line_shape='spline', mode='lines+markers',
+                           marker={'color': 'cornflowerblue'}, text=df['utz'])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
@@ -36,7 +36,7 @@ class Plot:
                 'yaxis2': {'title': 'Utilization (%)', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
-        # fig = px.line(df, x=period, y='utilization', color='charger_place', symbol="charger_place", line_shape='spline')
+        # fig = px.line(df, x=period, y='utz', color='charger_place', symbol="charger_place", line_shape='spline')
 
         if period == 'month':
             fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 충전량 & 이용률") #yaxis_range=[0,50]

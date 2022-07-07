@@ -58,22 +58,27 @@ for n in range(len(exist_stations)):
     charger = charger.astype({'charger_id': int})
 
     # 연관항목 초기화
-    charger['charger_place'] = info.charger_place[0]
-    charger['charger_optime'] = info.charger_optime[0]
-    charger['charger_target'] = info.charger_target[0]
+    charger['chPlace'] = info.charger_place[0]
+    charger['chOptm'] = info.charger_optime[0]
+    charger['chTarget'] = info.charger_target[0]
     charger['distance'] = info.distance[0][0]
-    charger['charger_density'] = info.charger_density[0][0]
-    charger['accessibility'] = info.accessibility[0][0]
-    charger['avg_num_users'] = comp.num_users(select_station, 'station_name', 'charger_code')['user_cnt'].iloc[0].item()
-    charger['num_users'] = info.avg_num_users[0][0]
-    charger['charging_fee'] = info.charging_fee[0][0]
-    charger['unable_charge'] = info.unable_charge[0][0]
+    charger['chDensity'] = info.charger_density[0][0]
+    charger['numUsers'] = comp.num_users(select_station, 'station_name', 'charger_code')['user_cnt'].iloc[0].item()
+    charger['chFee'] = info.charging_fee[0][0]
+    charger['unableCh'] = info.unable_charge[0][0]
 
     chargers.append(charger)
     print("Related item data has been added.\n")
 
 stations = pd.concat(chargers).sort_values(by=['station_name', 'charger_id'])
-# 평균 이용자 수 이상/이하 체크
-# for n in range(len(stations)):
-#     stations.insert(7, 'num_users', comp.utilization_group(stations[info.weekday[n][1] + 'Utilization']))
-stations.to_csv(doc_path + recommend_list, index=False, encoding='utf-8')
+stations.insert(10, 'scoreAccess', comp.score_chplace(stations['chPlace']))
+stations.insert(11, 'scoreNumUsers', comp.score_num_users(stations['numUsers']))
+
+stations = stations.drop(['numUsers'], axis=1)
+# 총점 계산 후, 정렬
+stations['total'] = stations.iloc[:, 8:13].sum(axis=1)
+stations['total'].sort_values(ascending=False)
+
+# 추천 연관항목, 점수 저장
+# stations.to_csv(doc_path + recommend_list, index=False, encoding='utf-8')
+

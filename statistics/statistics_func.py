@@ -10,7 +10,7 @@ class base:
         df_grouped = df.groupby(['station_name', 'charger_code', 'date', *args])
         df1 = df_grouped[['charging_time', 'charging_capacity']].apply(sum).reset_index()
         df1['charging_cnt'] = df_grouped.size().reset_index(name='cnt')['cnt']
-        df1['utilization'] = round(df1['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
+        df1['utz'] = round(df1['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
         df2['charging_time'] = round(df2['charging_time'] / 60, 0)
         return df2

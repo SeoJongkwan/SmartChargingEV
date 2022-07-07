@@ -4,7 +4,7 @@ dbname = "evehicle"
 user = "evehicle"
 password = "iloveyou"
 port = "5432"
-table = ["charger_rawmessage", "charger_chargerusage"]
+table = ["charger_rawmessage", "charger_chargerusage", "charger_history"]
 
 #station name, station code, charger code, charger num
 station_info = [
@@ -44,8 +44,8 @@ accessibility = [
     (2, '기타시설')
 ]
 
-avg_num_users = [
-    (5, '평균 이하'),
+num_users = [
+    (10, '평균 이하'),
     (0, '평균 이상')
 ]
 

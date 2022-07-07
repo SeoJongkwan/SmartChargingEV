@@ -19,20 +19,20 @@ class base:
         self.df['day_of_week'] = self.df[column].dt.day_name()
         self.df['hour'] = self.df[column].dt.hour
         self.df['minute'] = self.df[column].dt.minute
-        self.df['is_week'] =  self.df['weekday'].apply(lambda x: 1 if x > 4 else 0)
+        self.df['isWeek'] =  self.df['weekday'].apply(lambda x: 1 if x > 4 else 0)
         return self.df
 
     def add_columns(self):
-        self.time_split('start_time')
-        self.df['charging_time'] = (self.df['end_time'] - self.df['start_time']).dt.total_seconds()
-        self.df = self.df.astype({'charging_time': int})
-        self.df['member_type'] = np.where(self.df['member_name'] != '비회원', '회원',np.where(self.df['roaming_card_entity'].notnull().values == True, '로밍회원', '비회원'))  # 회원유형 구분
+        self.time_split('chStartTm')
+        # self.df['chTm'] = (self.df['chStartTm'] - self.df['chEndTm']).dt.total_seconds()
+        # self.df = self.df.astype({'chTm': int})
+        self.df['userType'] = np.where(self.df['userName'] != '비회원', '회원',np.where(self.df['rmCardEntity'].notnull().values == True, '로밍회원', '비회원'))  # 회원유형 구분
         return self.df
 
     def charger_avg_stat(self, df, *args):
         df_grouped = df.groupby([*args, 'date'])
-        df1 = df_grouped[['charging_time', 'charging_capacity']].apply(sum).reset_index()
-        df1['utilization'] = round(df1['charging_time'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
+        df1 = df_grouped[['chTm2', 'totEnergy']].apply(sum).reset_index()
+        df1['utz'] = round(df1['chTm2'].apply(lambda x: x / (24 * 60 * 60) * 100), 2)
         df2 = round(df1.groupby([*args]).mean().reset_index(), 1)
 
         if 'weekday' in args and 'hour' in args:
@@ -69,7 +69,7 @@ class base:
         else:
             start_hour = 18
             end_hour = 24
-        tz_util = round(df1[(df1['hour'] >= start_hour) & (df1['hour'] < end_hour)]['utilization'].sum(), 1)
+        tz_util = round(df1[(df1['hour'] >= start_hour) & (df1['hour'] < end_hour)]['utz'].sum(), 1)
         return tz_util
 
     def timezone_condition(self, x):
@@ -85,7 +85,7 @@ class base:
     def timezone_classification(self, df, separator):
         if len(df) > 0:
             df['timezone'] = df['hour'].apply(self.timezone_condition)
-            timezone_sum = df.groupby('timezone')['utilization'].sum()
+            timezone_sum = df.groupby('timezone')['utz'].sum()
             timezone = timezone_sum.idxmax() if separator == 'max' else timezone_sum.idxmin()
         else:
             timezone = ''
@@ -121,6 +121,17 @@ class base:
                 util_division.append(1)
         return util_division
 
+    def score_num_users(self, data):
+        num_user_division = []
+        avg = data.mean()
+
+        for n in data:
+            if n < avg :
+                num_user_division.append(info.num_users[0][0])
+            else:
+                num_user_division.append(info.num_users[1][0])
+        return num_user_division
+
     def num_users(self, df, *args): # 회원번호, 비회원번호 count하여 이용자 수 계산
         df1_group = df.groupby(['member_number', *args]).size().reset_index(name='cnt')
         df1 = df1_group.groupby([*args])['member_number'].count().reset_index(name='mem_cnt')
@@ -129,4 +140,21 @@ class base:
         df3 = pd.merge(df1, df2, on=[*args], how='outer').fillna(0)
         df3['user_cnt'] = df3['mem_cnt'] + df3['nonmem_cnt']
         return df3
+
+    def score_chplace(self, data):
+        place_division = []
+
+        for n in data:
+            if n == info.accessibility[0][1]:
+                place_division.append(info.accessibility[0][0])
+            elif n == info.accessibility[1][1]:
+                place_division.append(info.accessibility[1][0])
+            elif n == info.accessibility[2][1]:
+                place_division.append(info.accessibility[2][0])
+            elif n == info.accessibility[3][1]:
+                place_division.append(info.accessibility[3][0])
+            else:
+                place_division.append(info.avg_num_users[4][0])
+        return place_division
+
 
