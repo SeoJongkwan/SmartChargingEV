@@ -89,16 +89,30 @@ class Plot:
         period = self.charger.columns[0]
         if period == 'hour':
             title_period = '시간대'
+            xaxis = {"dtick": 1}
         elif period == 'date':
             title_period = '일'
+            xaxis = dict(tickformat="%m-%d")
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
+            xaxis = dict(
+                        tickmode = 'array',
+                        tickvals = [0, 1, 2, 3, 4, 5, 6],
+                        ticktext = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    )
         elif period == 'isWeek':
             title_period = '주중/주말'
+            xaxis = dict(
+                        tickmode = 'array',
+                        tickvals = [0, 1],
+                        ticktext = ['주중', '주말']
+                    )
         elif period == 'month':
             title_period = '월'
+            xaxis = dict(tickformat="%Y-%m")
         else:
             title_period = '충전소'
+            xaxis = None
 
         target = target.replace('/', '-')
 
@@ -112,14 +126,7 @@ class Plot:
             title = f"{target} - {title_period}별 " + axis_name1.split('(')[0]
             fig = self.single_chart(period, axis_name1, *args)
 
-        if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=title)
-        elif period == 'date':
-            fig.update_layout(xaxis=dict(tickformat="%m-%d"), title=title)
-        elif period == 'placeName':
-            fig.update_layout(title=title)
-        else:
-            fig.update_layout(xaxis={"dtick": 1}, title=title)
+        fig.update_layout(xaxis=xaxis, title=title)
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
 
         fileName = filePath + '/' + title + '.png'
