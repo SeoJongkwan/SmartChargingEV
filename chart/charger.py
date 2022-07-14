@@ -90,9 +90,11 @@ class Plot:
         if period == 'hour':
             title_period = '시간대'
             xaxis = {"dtick": 1}
+            xaxis_range = [0, 23]
         elif period == 'date':
             title_period = '일'
             xaxis = dict(tickformat="%m-%d")
+            xaxis_range = None
         elif period == 'weekday' or period =='dayofweek':
             title_period = '요일'
             xaxis = dict(
@@ -100,6 +102,7 @@ class Plot:
                         tickvals = [0, 1, 2, 3, 4, 5, 6],
                         ticktext = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
                     )
+            xaxis_range = [0, 6]
         elif period == 'isWeek':
             title_period = '주중/주말'
             xaxis = dict(
@@ -107,12 +110,15 @@ class Plot:
                         tickvals = [0, 1],
                         ticktext = ['주중', '주말']
                     )
+            xaxis_range = None
         elif period == 'month':
             title_period = '월'
             xaxis = dict(tickformat="%Y-%m")
+            xaxis_range = None
         else:
             title_period = '충전소'
             xaxis = None
+            xaxis_range = None
 
         target = target.replace('/', '-')
 
@@ -126,7 +132,8 @@ class Plot:
             title = f"{target} - {title_period}별 " + axis_name1.split('(')[0]
             fig = self.single_chart(period, axis_name1, *args)
 
-        fig.update_layout(xaxis=xaxis, title=title)
+        fig.update_layout(xaxis=xaxis, title=title, xaxis_range=xaxis_range)
+        # fig.update_xaxes(automargin=True)
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
 
         fileName = filePath + '/' + title + '.png'

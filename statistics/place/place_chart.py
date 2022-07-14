@@ -39,13 +39,13 @@ monthlyAvgStat = comp.charger_avg_stat(chargerHistory, 'month')
 weekdayAvgStat = comp.charger_avg_stat(chargerHistory, 'weekday')
 hourlyAvgStat = comp.charger_avg_stat(chargerHistory, 'hour')
 
-# 월별 충전시간 & 이용자 수
+# 월별 충전시간 & 이용자 수 합계
 chargerChart = charger_chart.Plot(monthlySumInfo)
 chargerChart.save_chart(placeName, placePath, 'chTm2', 'userCnt')
-# 월별 충전요금 & 충전량
+# 월별 충전요금 & 충전량 합계
 chargerChart.save_chart(placeName, placePath, 'totCost', 'totEnergy')
 
-# 일별 충전요금 & 충전량
+# 일별 충전요금 & 충전량 합계
 chargerChart = charger_chart.Plot(dailySumStat)
 chargerChart.save_chart(placeName, placePath, 'totCost', 'totEnergy')
 

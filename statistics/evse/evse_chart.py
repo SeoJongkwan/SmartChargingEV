@@ -46,15 +46,21 @@ for n in range(len(evses)):
     monthlyAvgStat = comp.charger_avg_stat(selEvse, 'month')
     weekdayAvgStat = comp.charger_avg_stat(selEvse, 'weekday')
     hourlyAvgStat = comp.charger_avg_stat(selEvse, 'hour')
-
+    # 선택한 충전기, 충전기 경로
     target = placeName + '/' + str(evseId)
     evsePath = comp.exist_path(placeName, evseId)
+    # 월별 충전시간 & 이용자 수 합계
     chargerChart = charger_chart.Plot(monthlySumInfo)
     chargerChart.save_chart(target, evsePath, 'chTm2', 'userCnt')
-
+    # 월별 평균 충전량 & 이용률
     chargerChart = charger_chart.Plot(monthlyAvgStat)
     chargerChart.save_chart(target, evsePath, 'totEnergy', 'utz')
-
+    # 월별 평균 이용률
     chargerChart = charger_chart.Plot(monthlyAvgStat)
     chargerChart.save_chart(target, evsePath, 'utz')
-
+    # 요일별 평균 이용률
+    chargerChart = charger_chart.Plot(weekdayAvgStat)
+    chargerChart.save_chart(target, evsePath, 'utz')
+    # 시간별 평균 이용률
+    chargerChart = charger_chart.Plot(hourlyAvgStat)
+    chargerChart.save_chart(target, evsePath, 'utz')

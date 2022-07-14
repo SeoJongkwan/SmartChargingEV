@@ -166,16 +166,15 @@ class base:
     def exist_path(self, *args):
         imgPath = '../../img/'
         placePath = imgPath + args[0].replace('/', '-')
+        path = placePath
+        if not os.path.exists(placePath):
+            os.mkdir(placePath)
 
         if(len(args) > 1):
             evsePath = placePath + '/' + str(args[1])
             path = evsePath
             if not os.path.exists(evsePath):
                 os.mkdir(evsePath)
-        else:
-            path = placePath
-            if not os.path.exists(placePath):
-                os.mkdir(placePath)
         return path
 
 
