@@ -50,7 +50,6 @@ class Plot:
                        marker={'color': 'mediumaquamarine'}, text=self.charger[args[0]])
             ],
             layout = {
-                'xaxis': {'title': f"{period}"},
                 'yaxis': {'title': axis_name1},
             }
         )
@@ -65,7 +64,6 @@ class Plot:
                            mode='lines+markers', marker={'color': 'gold'}, text=self.charger[args[1]])
             ],
             layout={
-                'xaxis': {'title': f"{period}"},
                 'yaxis': {'title': axis_name1},
                 'yaxis2': {'title': axis_name2, 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
@@ -85,7 +83,7 @@ class Plot:
             axis_name = '이용률(%)'
         return axis_name
 
-    def save_chart(self, target, filePath, *args):
+    def save_chart(self, target, filePath, duration, *args):
         period = self.charger.columns[0]
         if period == 'hour':
             title_period = '시간대'
@@ -120,21 +118,20 @@ class Plot:
             xaxis = None
             xaxis_range = None
 
-        target = target.replace('/', '-')
+        target = target.replace('/', '_')
 
         if len(args) > 1:
             axis_name1 = self.get_axis_name(args[0])
             axis_name2 = self.get_axis_name(args[1])
-            title = f"{target} {title_period}별 " + axis_name1.split('(')[0] + " & " + axis_name2.split('(')[0]
+            title = f"[{target}] ({duration}) {title_period}별 {axis_name1.split('(')[0]} & {axis_name2.split('(')[0]}"
             fig = self.double_chart(period, axis_name1, axis_name2, *args)
         else:
             axis_name1 = self.get_axis_name(args[0])
-            title = f"{target} - {title_period}별 " + axis_name1.split('(')[0]
+            title = f"[{target}] ({duration}) {title_period}별 {axis_name1.split('(')[0]}"
             fig = self.single_chart(period, axis_name1, *args)
 
-        fig.update_layout(xaxis=xaxis, title=title, xaxis_range=xaxis_range)
-        # fig.update_xaxes(automargin=True)
+        fig.update_layout(xaxis=xaxis, title=title, xaxis_range=xaxis_range, xaxis_title=title_period)
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
 
-        fileName = filePath + '/' + title + '.png'
+        fileName = f"{filePath}/{title}.png"
         fig.write_image(fileName)

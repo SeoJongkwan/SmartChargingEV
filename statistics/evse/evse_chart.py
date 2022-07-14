@@ -16,8 +16,9 @@ filterCol = ["chId", "placeName", "evseId", "evseName", "chStartTm", "chEndTm", 
              "userName", "chTm2", "totEnergy", "payCost", "totCost", "rmCardEntity", "stoppedReason"]
 history = history[filterCol].reset_index(drop=True)
 
-start_date = date(2022, 4, 1)
-chargerHistory = mt.select_time(history, 'chStartTm', start_date, 3)
+startDate = date(2022, 4, 1)
+numOfMonths = 3
+chargerHistory = mt.select_time(history, 'chStartTm', startDate, numOfMonths)
 chargerHistory = chargerHistory[chargerHistory['totEnergy'] > 0]           # 충전량 > 0
 chargerHistory = chargerHistory.dropna(subset=['chStartTm', 'chEndTm'])
 
@@ -46,21 +47,27 @@ for n in range(len(evses)):
     monthlyAvgStat = comp.charger_avg_stat(selEvse, 'month')
     weekdayAvgStat = comp.charger_avg_stat(selEvse, 'weekday')
     hourlyAvgStat = comp.charger_avg_stat(selEvse, 'hour')
+
     # 선택한 충전기, 충전기 경로
-    target = placeName + '/' + str(evseId)
+    target = f"{placeName}/{str(evseId)}"
     evsePath = comp.exist_path(placeName, evseId)
+
+    # 기간
+    startDateStr = str(pd.to_datetime(startDate, format='%Y-%m-%d')).split()[0].split('-', 1)[1]
+    duration = f"{startDateStr}, {str(numOfMonths)}"
+
     # 월별 충전시간 & 이용자 수 합계
     chargerChart = charger_chart.Plot(monthlySumInfo)
-    chargerChart.save_chart(target, evsePath, 'chTm2', 'userCnt')
+    chargerChart.save_chart(target, evsePath, duration, 'chTm2', 'userCnt')
     # 월별 평균 충전량 & 이용률
     chargerChart = charger_chart.Plot(monthlyAvgStat)
-    chargerChart.save_chart(target, evsePath, 'totEnergy', 'utz')
+    chargerChart.save_chart(target, evsePath, duration, 'totEnergy', 'utz')
     # 월별 평균 이용률
     chargerChart = charger_chart.Plot(monthlyAvgStat)
-    chargerChart.save_chart(target, evsePath, 'utz')
+    chargerChart.save_chart(target, evsePath, duration, 'utz')
     # 요일별 평균 이용률
     chargerChart = charger_chart.Plot(weekdayAvgStat)
-    chargerChart.save_chart(target, evsePath, 'utz')
+    chargerChart.save_chart(target, evsePath, duration, 'utz')
     # 시간별 평균 이용률
     chargerChart = charger_chart.Plot(hourlyAvgStat)
-    chargerChart.save_chart(target, evsePath, 'utz')
+    chargerChart.save_chart(target, evsePath, duration, 'utz')
