@@ -80,5 +80,5 @@ stations['total'] = stations.iloc[:, 8:13].sum(axis=1)
 stations['total'].sort_values(ascending=False)
 
 # 추천 연관항목, 점수 저장
-# stations.to_csv(doc_path + recommend_list, index=False, encoding='utf-8')
+# evses.to_csv(doc_path + recommend_list, index=False, encoding='utf-8')
 

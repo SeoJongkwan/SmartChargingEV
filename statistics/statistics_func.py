@@ -15,6 +15,11 @@ class base:
         df2['charging_time'] = round(df2['charging_time'] / 60, 0)
         return df2
 
+    def charger_sum_stat(self, *args):
+        df_grouped = self.df.groupby([*args])
+        df1 = df_grouped[['totCost', 'totEnergy']].apply(sum).reset_index()
+        return df1
+
     def num_users(self, df, *args): # 회원번호, 비회원번호 count하여 이용자 수 계산
         df1_group = df.groupby(['station_name', 'charger_code', 'member_number', *args]).size().reset_index(name='cnt')
         df1 = df1_group.groupby(['station_name', 'charger_code', *args])['member_number'].count().reset_index(name='mem_cnt')

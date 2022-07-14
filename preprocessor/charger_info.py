@@ -35,37 +35,37 @@ print(f'Registered Usage History: {len(UsageHistory)} (Capacity>0): {len(charger
 # 충전시간(seconds), 주중/주말 구분
 comp = component.base(charger)
 charger = comp.time_split('chStartTm')
-# charger['chTm'] = (charger['chEndTm'] - charger['chStartTm']).dt.total_seconds()
-# charger = charger.astype({'chTm': int})
+charger['chTm'] = (charger['chEndTm'] - charger['chStartTm']).dt.total_seconds()
+charger = charger.astype({'chTm': int})
 
 # 신규 충전소 목록
-# NewStations = charger.drop_duplicates(['station_name', 'charger_code'], keep='first')
-# NewStations = NewStations[['station_name', 'charger_code']].sort_values(by=['station_name', 'charger_code']).reset_index(drop=True)
-#
-# ExistStations = RegStations[RegStations['station_name'].isin(NewStations['station_name'])].reset_index(drop=True)
-# print(f'New Stations corresponding DB: {len(ExistStations)}')
-#
-# ChargerCheck = []                                                           #신규츙전소 저장 리스트
-# # n = 2
-# for n in range(len(ExistStations)):
-#     StationName = ExistStations.iloc[n, 1]
-#     ChargerId = ExistStations.iloc[n, 2]
-#     print(f"{n} station: {StationName} / charger id: {ChargerId}")
-#     SelectStation = charger[charger['station_name'] == StationName].reset_index(drop=True)
-#     SelectCharger = SelectStation[SelectStation['charger_code'] == ChargerId].reset_index(drop=True)
-#     if SelectCharger.empty:
-#         print("There are Station but, no Charger ID\n")                               #DB에는 충전기코드가 등록되어 있지만 신규 파일에는 없음
-#     else:
-#         SelectCharger['paid_fee'] = SelectCharger['paid_fee'].apply(lambda x: x.replace(',', '')).astype('int')
-#         SelectCharger['charging_fee'] = SelectCharger['charging_fee'].apply(lambda x: x.replace(',', '')).astype('int')
-#
-#         #신규 충전기 = 충전소이름 + 충전기코드(charger_id)
-#         NewCharger = ExistStations.where((ExistStations['station_name'] == StationName) & (ExistStations['charger_id'] == ChargerId)).dropna()
-#         NewCharger = NewCharger.astype({'charger_id': int})
-#         NewCharger['chargerType'] = info.charger_type[1]
-#
-#         ChargerCheck.append(NewCharger)                                                 #신규 충전기 추가
-#         print("New charger is registered\n")
-#
-# stations = pd.concat(ChargerCheck).sort_values(by=['station_name', 'charger_id'])
-# stations.to_csv(DocPath + ChargerList, index=False, encoding='utf-8')
+NewStations = charger.drop_duplicates(['station_name', 'charger_code'], keep='first')
+NewStations = NewStations[['station_name', 'charger_code']].sort_values(by=['station_name', 'charger_code']).reset_index(drop=True)
+
+ExistStations = RegStations[RegStations['station_name'].isin(NewStations['station_name'])].reset_index(drop=True)
+print(f'New Stations corresponding DB: {len(ExistStations)}')
+
+ChargerCheck = []                                                           #신규츙전소 저장 리스트
+# n = 2
+for n in range(len(ExistStations)):
+    StationName = ExistStations.iloc[n, 1]
+    ChargerId = ExistStations.iloc[n, 2]
+    print(f"{n} station: {StationName} / charger id: {ChargerId}")
+    SelectStation = charger[charger['station_name'] == StationName].reset_index(drop=True)
+    SelectCharger = SelectStation[SelectStation['charger_code'] == ChargerId].reset_index(drop=True)
+    if SelectCharger.empty:
+        print("There are Station but, no Charger ID\n")                               #DB에는 충전기코드가 등록되어 있지만 신규 파일에는 없음
+    else:
+        SelectCharger['paid_fee'] = SelectCharger['paid_fee'].apply(lambda x: x.replace(',', '')).astype('int')
+        SelectCharger['charging_fee'] = SelectCharger['charging_fee'].apply(lambda x: x.replace(',', '')).astype('int')
+
+        #신규 충전기 = 충전소이름 + 충전기코드(charger_id)
+        NewCharger = ExistStations.where((ExistStations['station_name'] == StationName) & (ExistStations['charger_id'] == ChargerId)).dropna()
+        NewCharger = NewCharger.astype({'charger_id': int})
+        NewCharger['chargerType'] = info.charger_type[1]
+
+        ChargerCheck.append(NewCharger)                                                 #신규 충전기 추가
+        print("New charger is registered\n")
+
+stations = pd.concat(ChargerCheck).sort_values(by=['station_name', 'charger_id'])
+stations.to_csv(DocPath + ChargerList, index=False, encoding='utf-8')

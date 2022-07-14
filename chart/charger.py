@@ -1,49 +1,15 @@
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
-from plotly.subplots import make_subplots
 
 class Plot:
     def __init__(self, charger):
         self.charger = charger
 
-    def show_charger_occupation(self, period, title):
-        """
-        :param period: time period
-        :param title: station info
-        :return: bar chart
-        """
-        if period == 'hour':
-            title_period = '시간대'
-        elif period == 'date':
-            title_period = '일'
-        elif period == 'weekday' or period =='dayofweek':
-            title_period = '요일'
-        elif period == 'isWeek':
-            title_period = '주중/주말'
-        else:
-            title_period = '월'
-
-        fig = px.bar(self.charger, x=period, y='occupation', barmode='group', text='occupation',
-                     title=f"{title} - {title_period}별 이용률",
-                     color_discrete_sequence=[
-                         px.colors.qualitative.Alphabet[15],
-                         px.colors.qualitative.Plotly[2],
-                         px.colors.qualitative.Plotly[9],
-                         px.colors.qualitative.Alphabet[11]
-                     ]
-                     )
-        if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
-        else:
-            fig.update_layout(xaxis={"dtick": 1})
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
-        fig.show()
-
-    def show_utilization_capa(self, df, period, title):
+    def show_charging_info(self, period, title, col1, col2):
         """
         :param period: weekday, hour, month
-        :return: occupation, charging count => bar & line chart
+        :return: total pay & total energy => bar & line chart
         """
         if period == 'hour':
             title_period = '시간대'
@@ -58,53 +24,103 @@ class Plot:
 
         fig = go.Figure(
             data=[
-                go.Bar(name='Charging Capacity', x=df[period], y=df['charging_capacity'], yaxis='y',
-                       marker={'color': 'lightblue'}, text=df['charging_capacity']),
-                go.Scatter(name='Utilization', x=df[period], y=df['utz'], yaxis='y2', line_shape='spline',
-                           mode='lines+markers',
-                           marker={'color': 'cornflowerblue'}, text=df['utz'])
+                go.Bar(name=col1, x=self.charger[period], y=self.charger[col1], yaxis='y', offsetgroup=1, marker={'color': 'mediumaquamarine'}, text=self.charger[col1]),
+                go.Scatter(name=col2, x=self.charger[period], y=self.charger[col2], yaxis='y2', line_shape='spline',
+                           mode='lines+markers', marker={'color': 'gold'}, text=self.charger[col2])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
-                'yaxis': {'title': 'Utilization (%)'},
-                'yaxis2': {'title': 'Charging Capacity', 'overlaying': 'y', 'side': 'right', 'showgrid': False}
+                'yaxis': {'title': col1},
+                'yaxis2': {'title': col2, 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
         if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 이용률 & 충전량") #yaxis_range=[0,50]
-        elif period =='hour':
-            fig.update_layout(xaxis={"dtick": 1}, xaxis_range=[0,23], title=f"{title} - {title_period}별 이용률 & 충전량")
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=f"{title} - {title_period}별 " + col1 + " & " + col2)
+        elif period == 'date':
+            fig.update_layout(xaxis=dict(tickformat="%m-%d"), title=f"{title} - {title_period}별 " + col1 + " & " + col2)
         else:
-            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 이용률 & 충전량")
+            fig.update_layout(xaxis={"dtick": 1}, title=f"{title} - {title_period}별 " + col1 + " & " + col2)
         fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
         fig.show()
 
-    def show_charging_info(self, period, col):
-        """
-        :param period: weekday, hour, month
-        :return: charging time & charging count, charging time & charging capacity => bar chart
-        """
-        df = self.charger
-        if col == 'charging_cnt':
-            color = 'lightsalmon'
-        else:
-            color = 'gold'
-
+    def single_chart(self, period, axis_name1, *args):
         fig = go.Figure(
             data=[
-                go.Bar(name='Charging Time', x=df[period], y=df['charging_time'], yaxis='y', offsetgroup=2, marker={'color': 'mediumpurple'}, text=df['charging_time']),
-                go.Bar(name=f"{col}", x=df[period], y=df[col], yaxis='y2', offsetgroup=1, marker={'color': color}, text=df[col])
+                go.Bar(name=args[0], x=self.charger[period], y=self.charger[args[0]], yaxis='y', offsetgroup=1,
+                       marker={'color': 'mediumaquamarine'}, text=self.charger[args[0]])
+            ],
+            layout = {
+                'xaxis': {'title': f"{period}"},
+                'yaxis': {'title': axis_name1},
+            }
+        )
+        return fig
+
+    def double_chart(self, period, axis_name1, axis_name2, *args):
+        fig = go.Figure(
+            data=[
+                go.Bar(name=args[0], x=self.charger[period], y=self.charger[args[0]], yaxis='y', offsetgroup=1,
+                       marker={'color': 'mediumaquamarine'}, text=self.charger[args[0]]),
+                go.Scatter(name=args[1], x=self.charger[period], y=self.charger[args[1]], yaxis='y2', line_shape='spline',
+                           mode='lines+markers', marker={'color': 'gold'}, text=self.charger[args[1]])
             ],
             layout={
                 'xaxis': {'title': f"{period}"},
-                'yaxis': {'title': 'Charging Time (hour)'},
-                'yaxis2': {'title': f"{col}", 'overlaying': 'y', 'side': 'right', 'showgrid': False}
+                'yaxis': {'title': axis_name1},
+                'yaxis2': {'title': axis_name2, 'overlaying': 'y', 'side': 'right', 'showgrid': False}
             }
         )
-        if period == 'month':
-            fig.update_layout(xaxis=dict(tickformat="%Y-%m"))
-        else:
-            fig.update_layout(xaxis={"dtick": 1})
-        fig.update_traces(texttemplate='%{text:.2s}', textposition='outside', textfont_size=20)
-        fig.show()
+        return fig
 
+    def get_axis_name(self, col):
+        if col == 'chTm2':
+            axis_name = '충전시간(sec)'
+        elif col == 'totEnergy':
+            axis_name = '충전량(Wh)'
+        elif col == 'totCost':
+            axis_name = '충전요금(원)'
+        elif col == 'userCnt':
+            axis_name = '이용자 수(명)'
+        else:
+            axis_name = '이용률(%)'
+        return axis_name
+
+    def save_chart(self, target, filePath, *args):
+        period = self.charger.columns[0]
+        if period == 'hour':
+            title_period = '시간대'
+        elif period == 'date':
+            title_period = '일'
+        elif period == 'weekday' or period =='dayofweek':
+            title_period = '요일'
+        elif period == 'isWeek':
+            title_period = '주중/주말'
+        elif period == 'month':
+            title_period = '월'
+        else:
+            title_period = '충전소'
+
+        target = target.replace('/', '-')
+
+        if len(args) > 1:
+            axis_name1 = self.get_axis_name(args[0])
+            axis_name2 = self.get_axis_name(args[1])
+            title = f"{target} {title_period}별 " + axis_name1.split('(')[0] + " & " + axis_name2.split('(')[0]
+            fig = self.double_chart(period, axis_name1, axis_name2, *args)
+        else:
+            axis_name1 = self.get_axis_name(args[0])
+            title = f"{target} - {title_period}별 " + axis_name1.split('(')[0]
+            fig = self.single_chart(period, axis_name1, *args)
+
+        if period == 'month':
+            fig.update_layout(xaxis=dict(tickformat="%Y-%m"), title=title)
+        elif period == 'date':
+            fig.update_layout(xaxis=dict(tickformat="%m-%d"), title=title)
+        elif period == 'placeName':
+            fig.update_layout(title=title)
+        else:
+            fig.update_layout(xaxis={"dtick": 1}, title=title)
+        fig.update_traces(texttemplate='%{text:.2s}', textfont_size=20)
+
+        fileName = filePath + '/' + title + '.png'
+        fig.write_image(fileName)

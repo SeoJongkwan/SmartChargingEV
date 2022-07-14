@@ -64,9 +64,11 @@ for n in range(len(existStations)):
     weekdayAvgStat = comp.charger_avg_stat(selectStation, 'weekday')
     weekdayHourStat = comp.charger_avg_stat(selectStation, 'weekday', 'hour')
     isweekAvgStat = comp.charger_avg_stat(selectStation, 'isWeek')
+    monthlyAvgStat = comp.charger_avg_stat(selectStation, 'month')
 
     # 일 평균 이용률
     addCharger['utz'] = round(isweekAvgStat['utz'].mean(), 1)
+    addCharger['monthlyUtz'] = round(monthlyAvgStat['utz'].mean(), 1)
 
     # 평균 통계값
     addCharger['avgChTm'] = round(selectStation['chTm2'].mean() / 60, 1)

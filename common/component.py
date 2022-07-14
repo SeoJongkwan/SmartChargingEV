@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 from common import info
@@ -38,6 +39,11 @@ class base:
         if 'weekday' in args and 'hour' in args:
             df2 = self.set_weekday_hour(df2)
         return df2
+
+    def charger_sum_stat(self, df, *args):
+        df_grouped = df.groupby([*args])
+        df1 = df_grouped[['chTm2', 'totCost', 'totEnergy']].apply(sum).reset_index()
+        return df1
 
     def set_weekday_hour(self, df):
         # 없는 시간대는 기본값 0
@@ -133,12 +139,12 @@ class base:
         return num_user_division
 
     def num_users(self, df, *args): # 회원번호, 비회원번호 count하여 이용자 수 계산
-        df1_group = df.groupby(['member_number', *args]).size().reset_index(name='cnt')
-        df1 = df1_group.groupby([*args])['member_number'].count().reset_index(name='mem_cnt')
-        df2_group = df.groupby(['nonmember_number', *args]).size().reset_index(name='cnt')
-        df2 = df2_group.groupby([*args])['nonmember_number'].count().reset_index(name='nonmem_cnt')
+        df1_group = df.groupby(['memberNo', *args]).size().reset_index(name='cnt')
+        df1 = df1_group.groupby([*args])['memberNo'].count().reset_index(name='memberCnt')
+        df2_group = df.groupby(['nonMemberNo', *args]).size().reset_index(name='cnt')
+        df2 = df2_group.groupby([*args])['nonMemberNo'].count().reset_index(name='nonMemberCnt')
         df3 = pd.merge(df1, df2, on=[*args], how='outer').fillna(0)
-        df3['user_cnt'] = df3['mem_cnt'] + df3['nonmem_cnt']
+        df3['userCnt'] = df3['memberCnt'] + df3['nonMemberCnt']
         return df3
 
     def score_chplace(self, data):
@@ -156,5 +162,21 @@ class base:
             else:
                 place_division.append(info.avg_num_users[4][0])
         return place_division
+
+    def exist_path(self, *args):
+        imgPath = '../../img/'
+        placePath = imgPath + args[0].replace('/', '-')
+
+        if(len(args) > 1):
+            evsePath = placePath + '/' + str(args[1])
+            path = evsePath
+            if not os.path.exists(evsePath):
+                os.mkdir(evsePath)
+        else:
+            path = placePath
+            if not os.path.exists(placePath):
+                os.mkdir(placePath)
+        return path
+
 
 

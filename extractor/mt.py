@@ -107,7 +107,7 @@ def select_station(station_name, charger_code):
 
 def all_stations():
     """
-   :return: result for all stations
+   :return: result for all evses
    """
     raw_msg = "SELECT station_id, station_name, charger_id, address FROM charger_station"
     cursor.execute(raw_msg)
